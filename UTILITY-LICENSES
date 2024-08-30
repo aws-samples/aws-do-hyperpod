@@ -1,0 +1,18 @@
+aws-cli - Apache 2.0
+docker-ce - Apache 2.0
+envsubst - MIT-0
+golang - BSD-3-Clause
+python - PSF
+dpkg-licenses - GPL-3.0
+yq - MIT
+cw-observability-addon - Apache 2.0
+eksctl - Apache 2.0
+helm - Apache 2.0
+hyperpod cli - Apache 2.0
+k9s - Apache 2.0
+kubectl - Apache 2.0
+kubectx - Apache 2.0
+kubeps1 - Apache 2.0
+kube-node-shell - Apache 2.0
+kubetail - Apache 2.0
+eks-node-viewer - Apache 2.0

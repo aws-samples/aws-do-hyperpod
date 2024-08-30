@@ -1,0 +1,117 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: etcd-gpu
+spec:
+  ports:
+    - name: etcd-client-port
+      port: 2379
+      protocol: TCP
+      targetPort: 2379
+  selector:
+    app: etcd-gpu
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: etcd-gpu
+  name: etcd-gpu
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: etcd-gpu
+  template:
+    metadata:
+      labels:
+        app: etcd-gpu
+    spec:
+      nodeSelector:
+        node.kubernetes.io/instance-type: ml.g5.8xlarge
+      containers:
+        - name: etcd
+          command: ["/usr/local/bin/etcd"]
+          args:
+            - "--data-dir"
+            - "/var/lib/etcd"
+            - "--enable-v2"
+            - "--listen-client-urls"
+            - "http://0.0.0.0:2379"
+            - "--advertise-client-urls"
+            - "http://0.0.0.0:2379"
+            - "--initial-cluster-state"
+            - "new"
+          image: quay.io/coreos/etcd:latest
+          ports:
+            - containerPort: 2379
+              name: client
+              protocol: TCP
+            - containerPort: 2380
+              name: server
+              protocol: TCP
+      restartPolicy: Always
+---
+# Example from: https://github.com/kubeflow/training-operator/tree/master/examples/pytorch/elastic/imagenet
+apiVersion: "kubeflow.org/v1"
+kind: PyTorchJob
+metadata:
+  name: imagenet-gpu
+  annotations: {
+    sagemaker.amazonaws.com/enable-job-auto-resume: "true",
+    sagemaker.amazonaws.com/job-max-retry-count: "2"
+  }
+spec:
+  elasticPolicy:
+    rdzvBackend: etcd
+    rdzvHost: etcd-gpu
+    rdzvPort: 2379
+    minReplicas: 2
+    maxReplicas: 36
+    maxRestarts: 200
+    metrics:
+      - type: Resource
+        resource:
+          name: cpu
+          target:
+            type: Utilization
+            averageUtilization: 80
+  pytorchReplicaSpecs:
+    Worker:
+      replicas: 2
+      restartPolicy: OnFailure
+      template:
+        metadata:
+          labels:
+            app: imagenet
+        spec:
+          nodeSelector:
+            node.kubernetes.io/instance-type: "ml.g5.8xlarge"
+          affinity:
+            podAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+              - labelSelector:
+                  matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                    - imagenet
+                topologyKey: "topology.kubernetes.io/zone"
+          containers:
+            - name: pytorch
+              image: kubeflow/pytorch-elastic-example-imagenet:latest
+              imagePullPolicy: IfNotPresent
+              resources:
+                requests:
+                  nvidia.com/gpu: 1
+                limits:
+                  nvidia.com/gpu: 1
+              env:
+              - name: LOGLEVEL
+                value: DEBUG
+              command:
+                - bash
+                - -c
+                - "wget https://raw.githubusercontent.com/pytorch/elastic/master/examples/imagenet/main.py -O /workspace/examples/imagenet.py; python -m torch.distributed.run /workspace/examples/imagenet.py --arch=resnet18 --epochs=20 --batch-size=32 --workers=0 --checkpoint-file=/workspace/checkpoint.pth.tar /workspace/data/tiny-imagenet-200"
+
