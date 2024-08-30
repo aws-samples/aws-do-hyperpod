@@ -5,7 +5,9 @@ golang - BSD-3-Clause
 python - PSF
 dpkg-licenses - GPL-3.0
 yq - MIT
-cw-observability-addon - Apache 2.0
+cw-agent - MIT
+dcgm - Apache
+neuron-monitor - Creative Commons
 eksctl - Apache 2.0
 helm - Apache 2.0
 hyperpod cli - Apache 2.0
