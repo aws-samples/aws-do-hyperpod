@@ -10,7 +10,7 @@ else
 	echo "Deleting HyperPod nodes from cluster: $HYPERPOD_NAME"
 	./hyperpod-status.sh ${HYPERPOD_NAME}
 	if [ "$?" == "0" ]; then
-    		CMD="aws sagemaker delete-cluster-nodes --cluster-name ${HYPERPOD_NAME} --node-ids $@"
+    		CMD="aws sagemaker delete-cluster-nodes --cluster-name ${HYPERPOD_NAME} ${ENDPOINT_ARG} --node-ids $@"
     		if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
     		eval "$CMD"
 	else

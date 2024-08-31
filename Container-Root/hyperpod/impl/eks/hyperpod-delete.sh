@@ -11,7 +11,7 @@ case "$response" in
     [yY][eE][sS]|[yY])
         ./hyperpod-status.sh ${HYPERPOD_NAME}
         if [ "$?" == "0" ]; then
-            CMD="aws sagemaker delete-cluster --cluster-name ${HYPERPOD_NAME}"
+            CMD="aws sagemaker delete-cluster --cluster-name ${HYPERPOD_NAME} ${ENDPOINT_ARG}"
             if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
             eval "$CMD"
         else

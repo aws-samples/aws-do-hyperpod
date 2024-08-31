@@ -29,8 +29,8 @@ pushd ${ENV_HOME}${CONF}
 cat ./hyperpod-update-config.json
 
 # Update HyperPod cluster
-aws sagemaker update-cluster \
-    --cli-input-json file://hyperpod-update-config.json \
-    --region $AWS_REGION
+CMD="aws sagemaker update-cluster --cli-input-json file://hyperpod-update-config.json --region $AWS_REGION ${ENDPOINT_ARG}"
+if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
+eval "${CMD}"
 popd
 

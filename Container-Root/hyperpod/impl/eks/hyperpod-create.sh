@@ -78,7 +78,7 @@ cat ./hyperpod-config.json
 
 # Create HyperPod cluster
 echo "Creating HyperPod cluster ..." 
-CMD="aws sagemaker create-cluster --cli-input-json file://hyperpod-config.json --region $AWS_REGION"
+CMD="aws sagemaker create-cluster --cli-input-json file://hyperpod-config.json --region $AWS_REGION ${ENDPOINT_ARG}"
 if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
 eval "$CMD"
 popd
