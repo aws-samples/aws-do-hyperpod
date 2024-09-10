@@ -24,12 +24,6 @@ fi
 
 pushd ${ENV_HOME}impl/eks/src
 
-# Update cfn template
-#PRINCIPAL_ARN=$(aws sts get-caller-identity --query Arn --output text)
-#sed -i "s%\!ImportValue WorkshopRoleArn%\'${PRINCIPAL_ARN}\'%g" cfn/hyperpod-eks-full-stack.yaml
-#sed -i "s%'HyperPodServiceRoleAlternative'%\!Sub \'\${ResourceNamePrefix}-HyperPodServiceRoleAlternative\'%g" cfn/hyperpod-eks-full-stack.yaml
-#/util/p-rm.sh UserAccessEntry cfn/hyperpod-eks-full-stack.yaml
-
 # Create cfn stack if it does not exist
 CMD="aws cloudformation list-stacks --query 'StackSummaries[?StackStatus==\`CREATE_COMPLETE\`].StackName' | grep \\\"${STACK_ID}\\\" | wc -l | tr -d ' '"
 if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
@@ -39,7 +33,23 @@ if [ "$STACK_COUNT" == "0" ]; then
         
 	# Create stack
 	echo "Creating CloudFormation stack ${STACK_ID} ..."
-	/util/cfn-create.sh ${STACK_ID} cfn/hyperpod-eks-full-stack.yaml ParameterKey=ResourceNamePrefix,ParameterValue=$RESOURCE_NAME_PREFIX ParameterKey=CreateEKSCluster,ParameterValue=$CREATE_EKS_CLUSTER ParameterKey=AvailabilityZoneId,ParameterValue=$AVAILABILITY_ZONE_ID ParameterKey=VpcCIDR,ParameterValue=$VPC_CIDR ParameterKey=PublicSubnet1CIDR,ParameterValue=$PUBLIC_SUBNET1_CIDR ParameterKey=PublicSubnet2CIDR,ParameterValue=$PUBLIC_SUBNET2_CIDR ParameterKey=PublicSubnet3CIDR,ParameterValue=$PUBLIC_SUBNET3_CIDR ParameterKey=PrivateSubnet1CIDR,ParameterValue=$PRIVATE_SUBNET1_CIDR ParameterKey=KubernetesVersion,ParameterValue=$KUBERNETES_VERSION ParameterKey=EKSPrivateSubnet1CIDR,ParameterValue=$EKS_PRIVATE_SUBNET1_CIDR ParameterKey=EKSPrivateSubnet2CIDR,ParameterValue=$EKS_PRIVATE_SUBNET2_CIDR ParameterKey=EKSPrivateSubnet3CIDR,ParameterValue=$EKS_PRIVATE_SUBNET3_CIDR
+	/util/cfn-create.sh ${STACK_ID} cfn/hyperpod-eks-full-stack.yaml \
+ParameterKey=CreateEKSCluster,ParameterValue=$CREATE_EKS_CLUSTER \
+ParameterKey=CreateSubnet,ParameterValue=${CREATE_SUBNET} \
+ParameterKey=ResourceNamePrefix,ParameterValue=$RESOURCE_NAME_PREFIX \
+ParameterKey=AvailabilityZoneId,ParameterValue=$AVAILABILITY_ZONE_ID \
+ParameterKey=VpcId,ParameterValue=$VPC_ID \
+ParameterKey=VpcCIDR,ParameterValue=$VPC_CIDR \
+ParameterKey=SecurityGroupId,ParameterValue=$SECURITY_GROUP \
+ParameterKey=NatGatewayId,ParameterValue=$NAT_GATEWAY \
+ParameterKey=PublicSubnet1CIDR,ParameterValue=$PUBLIC_SUBNET1_CIDR \
+ParameterKey=PublicSubnet2CIDR,ParameterValue=$PUBLIC_SUBNET2_CIDR \
+ParameterKey=PublicSubnet3CIDR,ParameterValue=$PUBLIC_SUBNET3_CIDR \
+ParameterKey=PrivateSubnet1CIDR,ParameterValue=$PRIVATE_SUBNET1_CIDR \
+ParameterKey=KubernetesVersion,ParameterValue=$KUBERNETES_VERSION \
+ParameterKey=EKSPrivateSubnet1CIDR,ParameterValue=$EKS_PRIVATE_SUBNET1_CIDR \
+ParameterKey=EKSPrivateSubnet2CIDR,ParameterValue=$EKS_PRIVATE_SUBNET2_CIDR \
+ParameterKey=EKSPrivateSubnet3CIDR,ParameterValue=$EKS_PRIVATE_SUBNET3_CIDR
 
 	# Connect to EKS cluster
         echo "Connecting to EKS cluster ..."
@@ -50,15 +60,24 @@ else
 	echo "CloudFormation stack ${STACK_ID} already exists"
 fi
 
-echo "Applying manifests ..."
-# Apply HyperPod Manifests
-NS_COUNT=$(kubectl get namespace hyperpod | grep hyperpod | wc -l)
-if [ "$NS_COUNT" == "1" ]; then
-	echo "Namespace hyperpod already exists"
-else
-	kubectl create namespace hyperpod
+echo "Detecting dependencies ..."
+DEPENDENCIES_CNT=$(helm list --namespace kube-system | grep dependencies | wc -l)
+if [ ! "$DEPENDENCIES_CNT" == 0 ]; then
+	echo "Old dependencies detected ... uninstaling ..."
+	CMD="helm uninstall dependencies --namespace kube-system"
+	if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
+	eval "$CMD"
 fi
-kubectl apply -f manifests
+
+echo "Installing helm chart ..."
+pushd sagemaker-hyperpod-cli/helm_chart
+./install_dependencies.sh
+helm lint ./HyperPodHelmChart
+helm dependencies update ./HyperPodHelmChart
+CMD="helm install dependencies ./HyperPodHelmChart --namespace kube-system"
+if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
+eval "$CMD"
+popd
 
 # Extract output environment variables
 source ${ENV_HOME}${CONF}/env_input
@@ -81,5 +100,11 @@ echo "Creating HyperPod cluster ..."
 CMD="aws sagemaker create-cluster --cli-input-json file://hyperpod-config.json --region $AWS_REGION ${ENDPOINT_ARG}"
 if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
 eval "$CMD"
+if [ "$?" == "0" ]; then
+	echo ""
+	echo "To monitor cluster status use:"
+	echo "watch ./hyperpod-status.sh"
+	echo ""
+fi
 popd
 

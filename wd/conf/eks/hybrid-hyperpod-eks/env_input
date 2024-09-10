@@ -8,14 +8,18 @@ export HYPERPOD_NAME=${RESOURCE_NAME_PREFIX}-smhp
 export STACK_ID=${RESOURCE_NAME_PREFIX}-cfn
 export ACCEL_INSTANCE_TYPE1=ml.g5.8xlarge
 export ACCEL_COUNT1=2
+export ACCEL_VOLUME1_SIZE=500
 export ACCEL_INSTANCE_TYPE2=ml.p5.48xlarge
 export ACCEL_COUNT2=2
+export ACCEL_VOLUME2_SIZE=500
 export ACCEL_INSTANCE_TYPE3=ml.trn1n.32xlarge
 export ACCEL_COUNT3=2
+export ACCEL_VOLUME3_SIZE=500
 export GEN_INSTANCE_TYPE=ml.m5.2xlarge
 export GEN_COUNT=2
-export BURN_ENABLED=false
-export RECOVER_ENABLED=true
+export GEN_VOLUME_SIZE=300
+export ONSTART_DEEP_HEALTHCHECKS="['InstanceStress','InstanceConnectivity']"
+export NODE_RECOVERY="Automatic"
 
 # VPC
 export AVAILABILITY_ZONE_ID=use2-az1

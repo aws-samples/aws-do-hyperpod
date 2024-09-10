@@ -25,8 +25,8 @@ then
     exit 1
 fi
 
-# Clear previously set env_vars
-> env_vars
+# Clear previously set env_vars 
+> env_vars 
 
 # Define AWS Region
 if [ -z ${AWS_REGION} ]; then
@@ -77,7 +77,7 @@ else
     return 1
 fi
 
-# Retrieve S3 Bucket Name
+# Retrieve S3 Bucket Name 
 export BUCKET_NAME=`aws cloudformation describe-stacks \
     --stack-name $STACK_ID \
     --query 'Stacks[0].Outputs[?OutputKey==\`AmazonS3BucketName\`].OutputValue' \
@@ -92,7 +92,7 @@ else
     return 1
 fi
 
-# Retrieve SageMaker Execution Role
+# Retrieve SageMaker Execution Role 
 export EXECUTION_ROLE=`aws cloudformation describe-stacks \
     --stack-name $STACK_ID \
     --query 'Stacks[0].Outputs[?OutputKey==\`AmazonSagemakerClusterExecutionRoleArn\`].OutputValue' \
@@ -211,13 +211,21 @@ fi
 echo "export ACCEL_INSTANCE_TYPE=${ACCEL_INSTANCE_TYPE}" >> env_vars
 echo "[INFO] ACCEL_INSTANCE_TYPE = ${ACCEL_INSTANCE_TYPE}"
 
-# Set number of accelerated compute nodes to deploy
+# Set number of accelerated compute nodes to deploy 
 if [ -z ${ACCEL_COUNT} ]; then
     echo "[WARNING] ACCEL_COUNT environment variable is not set, automatically set to 1."
     export ACCEL_COUNT=1
 fi
 echo "export ACCEL_COUNT=${ACCEL_COUNT}" >> env_vars
 echo "[INFO] ACCEL_COUNT = ${ACCEL_COUNT}"
+
+# Set the EBS Volume size for the accelerated compute nodes 
+if [ -z ${ACCEL_VOLUME_SIZE} ]; then
+    echo "[WARNING] ACCEL_VOLUME_SIZE environment variable is not set, automatically set to 500."
+    export ACCEL_VOLUME_SIZE=500
+fi
+echo "export ACCEL_VOLUME_SIZE=${ACCEL_VOLUME_SIZE}" >> env_vars
+echo "[INFO] ACCEL_VOLUME_SIZE = ${ACCEL_VOLUME_SIZE}"
 
 # Define general purpose compute instance type.
 if [ -z ${GEN_INSTANCE_TYPE} ]; then
@@ -235,19 +243,26 @@ fi
 echo "export GEN_COUNT=${GEN_COUNT}" >> env_vars
 echo "[INFO] GEN_COUNT = ${GEN_COUNT}"
 
-# Set burn-in
-if [ -z ${BURN_ENABLED} ]; then
-    echo "[WARNING] BURN_ENABLED environment variable is not set, automatically set to true."
-    export BURN_ENABLED=true
+# Set the EBS Volume size for the general purpose compute nodes 
+if [ -z ${GEN_VOLUME_SIZE} ]; then
+    echo "[WARNING] GEN_VOLUME_SIZE environment variable is not set, automatically set to 500."
+    export GEN_VOLUME_SIZE=500
 fi
-echo "export BURN_ENABLED=${BURN_ENABLED}" >> env_vars
-echo "[INFO] BURN_ENABLED = ${BURN_ENABLED}"
+echo "export GEN_VOLUME_SIZE=${GEN_VOLUME_SIZE}" >> env_vars
+echo "[INFO] GEN_VOLUME_SIZE = ${GEN_VOLUME_SIZE}"
+
+# Set burn-in 
+# if [ -z ${BURN_ENABLED} ]; then
+#     echo "[WARNING] BURN_ENABLED environment variable is not set, automatically set to true."
+#     export BURN_ENABLED=true
+# fi
+# echo "export BURN_ENABLED=${BURN_ENABLED}" >> env_vars
+# echo "[INFO] BURN_ENABLED = ${BURN_ENABLED}"
 
 # Set auto-recovery
-if [ -z ${RECOVER_ENABLED} ]; then
-    echo "[WARNING] RECOVER_ENABLED environment variable is not set, automatically set to true."
-    export RECOVER_ENABLED=true
+if [ -z ${NODE_RECOVERY} ]; then
+    echo "[WARNING] NODE_RECOVERY environment variable is not set, set to Automatic."
+    export NODE_RECOVERY="Automatic"
 fi
-echo "export RECOVER_ENABLED=${RECOVER_ENABLED}" >> env_vars
-echo "[INFO] RECOVER_ENABLED = ${RECOVER_ENABLED}"
-
+echo "export NODE_RECOVERY=${NODE_RECOVERY}" >> env_vars
+echo "[INFO] NODE_RECOVERY = ${NODE_RECOVERY}"
