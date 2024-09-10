@@ -11,18 +11,32 @@ cat > hyperpod-update-config.json << EOL
         "InstanceGroupName": "worker-group-1",
         "InstanceType": "${ACCEL_INSTANCE_TYPE}",
         "InstanceCount": ${ACCEL_COUNT},
+        "InstanceStorageConfigs": [
+          {
+            "EbsVolumeConfig": {
+              "VolumeSizeInGB": ${ACCEL_VOLUME_SIZE}
+            }
+          }
+        ],
         "LifeCycleConfig": {
           "SourceS3Uri": "s3://${BUCKET_NAME}",
           "OnCreate": "on_create.sh"
         },
         "ExecutionRole": "${EXECUTION_ROLE}",
         "ThreadsPerCore": 1,
-        "EnableBurnInTest": ${BURN_ENABLED}
+        "OnStartDeepHealthChecks": ${ONSTART_DEEP_HEALTHCHECKS}
       },
       {
         "InstanceGroupName": "worker-group-2",
         "InstanceType": "${GEN_INSTANCE_TYPE}",
         "InstanceCount": ${GEN_COUNT},
+        "InstanceStorageConfigs": [
+          {
+            "EbsVolumeConfig": {
+              "VolumeSizeInGB": ${GEN_VOLUME_SIZE}
+            }
+          }
+        ],
         "LifeCycleConfig": {
           "SourceS3Uri": "s3://${BUCKET_NAME}",
           "OnCreate": "on_create.sh"
@@ -31,8 +45,6 @@ cat > hyperpod-update-config.json << EOL
         "ThreadsPerCore": 1
       }
     ],
-    "ResilienceConfig": {
-      "EnableNodeAutoRecovery": ${RECOVER_ENABLED}
-    }
+    "NodeRecovery": ${NODE_RECOVERY}
 }
 EOL

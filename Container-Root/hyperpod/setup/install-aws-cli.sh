@@ -19,8 +19,4 @@ aws --version
 rm -rf ./aws
 rm -f awscliv2.zip
 
-# Add HyperPod EKS Beta model
-aws configure add-model \
-  --service-model file://sagemaker/sagemaker-2017-07-24.normal.json \
-  --service-name sagemaker-beta
 
