@@ -13,8 +13,8 @@ export ACCEL_VOLUME_SIZE=500
 export GEN_INSTANCE_TYPE=ml.m5.2xlarge
 export GEN_COUNT=2
 export GEN_VOLUME_SIZE=300
-export ONSTART_DEEP_HEALTHCHECKS="['InstanceStress','InstanceConnectivity']"
-export NODE_RECOVERY="Automatic"
+export ONSTART_DEEP_HEALTHCHECKS="[\"InstanceStress\", \"InstanceConnectivity\"]"
+export NODE_RECOVERY=Automatic
 
 # VPC
 export AVAILABILITY_ZONE_ID=usw2-az1

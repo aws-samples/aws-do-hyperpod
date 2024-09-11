@@ -83,6 +83,6 @@ cat > hyperpod-update-config.json << EOL
         "OnStartDeepHealthChecks": ${ONSTART_DEEP_HEALTHCHECKS}
       }
     ],
-    "NodeRecovery": ${NODE_RECOVERY}
+    "NodeRecovery": "${NODE_RECOVERY}"
 }
 EOL
