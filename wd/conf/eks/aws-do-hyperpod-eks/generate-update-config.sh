@@ -45,6 +45,6 @@ cat > hyperpod-update-config.json << EOL
         "ThreadsPerCore": 1
       }
     ],
-    "NodeRecovery": ${NODE_RECOVERY}
+    "NodeRecovery": "${NODE_RECOVERY}"
 }
 EOL

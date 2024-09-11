@@ -93,6 +93,6 @@ cat > hyperpod-config.json << EOL
       "SecurityGroupIds": ["$SECURITY_GROUP"],
       "Subnets":["$SUBNET_ID"]
     },
-    "NodeRecovery": ${NODE_RECOVERY}
+    "NodeRecovery": "${NODE_RECOVERY}"
 }
 EOL
