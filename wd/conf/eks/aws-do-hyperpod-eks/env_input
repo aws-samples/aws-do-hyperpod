@@ -1,9 +1,10 @@
 # Input environemnt variables
 
 ## HyperPod
+export CREATE_EKS_CLUSTER=true
+export CREATE_SUBNET=false
 export RESOURCE_NAME_PREFIX=aws-do-hyperpod-eks
 export EKS_CLUSTER_NAME=${RESOURCE_NAME_PREFIX}-cluster
-export CREATE_EKS_CLUSTER=true
 export HYPERPOD_NAME=${RESOURCE_NAME_PREFIX}-smhp
 export STACK_ID=${RESOURCE_NAME_PREFIX}-cfn
 export ACCEL_INSTANCE_TYPE=ml.g5.8xlarge
@@ -16,7 +17,7 @@ export ONSTART_DEEP_HEALTHCHECKS="['InstanceStress','InstanceConnectivity']"
 export NODE_RECOVERY="Automatic"
 
 # VPC
-export AVAILABILITY_ZONE_ID=use2-az1
+export AVAILABILITY_ZONE_ID=usw2-az1
 export VPC_CIDR=10.192.0.0/16
 export PUBLIC_SUBNET1_CIDR=10.192.10.0/24
 export PUBLIC_SUBNET2_CIDR=10.192.11.0/24
@@ -39,4 +40,6 @@ export EKS_PRIVATE_SUBNET3_CIDR=10.192.9.0/28
 ## ID of PRIVATE_SUBNET1
 #export SUBNET_ID=
 ## ID of EKS security group
-#export SECURITY_GROUP=
+#export SECURITY_GROUP_ID=
+## NAT_GATEWAY_ID
+#export NAT_GATEWAY_ID=

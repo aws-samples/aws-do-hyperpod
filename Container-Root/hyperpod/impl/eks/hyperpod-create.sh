@@ -40,8 +40,8 @@ ParameterKey=ResourceNamePrefix,ParameterValue=$RESOURCE_NAME_PREFIX \
 ParameterKey=AvailabilityZoneId,ParameterValue=$AVAILABILITY_ZONE_ID \
 ParameterKey=VpcId,ParameterValue=$VPC_ID \
 ParameterKey=VpcCIDR,ParameterValue=$VPC_CIDR \
-ParameterKey=SecurityGroupId,ParameterValue=$SECURITY_GROUP \
-ParameterKey=NatGatewayId,ParameterValue=$NAT_GATEWAY \
+ParameterKey=SecurityGroupId,ParameterValue=$SECURITY_GROUP_ID \
+ParameterKey=NatGatewayId,ParameterValue=$NAT_GATEWAY_ID \
 ParameterKey=PublicSubnet1CIDR,ParameterValue=$PUBLIC_SUBNET1_CIDR \
 ParameterKey=PublicSubnet2CIDR,ParameterValue=$PUBLIC_SUBNET2_CIDR \
 ParameterKey=PublicSubnet3CIDR,ParameterValue=$PUBLIC_SUBNET3_CIDR \
