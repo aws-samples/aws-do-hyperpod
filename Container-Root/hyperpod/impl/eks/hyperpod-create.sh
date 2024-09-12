@@ -22,10 +22,15 @@ if [ "$CREATE_EKS_CLUSTER" == "" ]; then
 	export CREATE_EKS_CLUSTER=true
 fi
 
+export REGION_OPT=""
+if [ ! "${AWS_REGION}" == "" ]; then
+	export REGION_OPT="--region ${AWS_REGION}"
+fi
+
 pushd ${ENV_HOME}impl/eks/src
 
 # Create cfn stack if it does not exist
-CMD="aws cloudformation list-stacks --query 'StackSummaries[?StackStatus==\`CREATE_COMPLETE\`].StackName' | grep \\\"${STACK_ID}\\\" | wc -l | tr -d ' '"
+CMD="aws cloudformation list-stacks --query 'StackSummaries[?StackStatus==\`CREATE_COMPLETE\`].StackName' ${REGION_OPT} | grep \\\"${STACK_ID}\\\" | wc -l | tr -d ' '"
 if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
 STACK_COUNT=$(eval $CMD)
 echo "STACK_COUNT=$STACK_COUNT"

@@ -41,18 +41,9 @@ popd
 # Install helm
 ./hyperpod/setup/eks/install-helm.sh
 
-# Install docker
-./hyperpod/setup/install-docker.sh
-
-# Install golang
-./hyperpod/setup/install-go.sh
-
 # Install python
 ./hyperpod/setup/install-python.sh
 python -m pip install torchx[kubernetes]
-
-# Install monitui
-./hyperpod/setup/eks/install-monitui.sh
 
 # Install kubeps1 and configure bashrc aliases 
 ./hyperpod/setup/eks/install-kubeps1.sh
@@ -60,14 +51,29 @@ python -m pip install torchx[kubernetes]
 # Install bash customizations
 ./hyperpod/setup/install-bashrc.sh
 
-# Install k9s
-./hyperpod/setup/eks/install-k9s.sh
-
 # Install hyperpod-eks
 ./hyperpod/setup/eks/install-hyperpod-eks.sh
 
 # Install sbom utilities
 ./hyperpod/setup/install-sbom-utils.sh
+
+if [ ! "$MOD" == "compact" ]; then
+	# Install docker
+	./hyperpod/setup/install-docker.sh
+
+	# Install golang
+	./hyperpod/setup/install-go.sh
+
+	# Install monitui
+	./hyperpod/setup/eks/install-monitui.sh
+
+	# Install k9s
+	./hyperpod/setup/eks/install-k9s.sh
+
+	apt clean
+
+	pip cache purge
+fi
 
 # Generate SBOM and store it in the root of the container image
 ./sbom.sh
