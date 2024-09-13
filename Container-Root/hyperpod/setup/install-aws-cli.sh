@@ -13,8 +13,9 @@ echo "$URL"
 # Install aws cli
 curl "$URL" -o "awscliv2.zip"
 unzip awscliv2.zip
-sudo ./aws/install --update --bin-dir /usr/local/bin
-sudo cp -f /usr/local/bin/aws /bin/aws
+sudo ./aws/install --update --install-dir /usr/local/aws-cli
+sudo ln -s /usr/local/aws-cli/v2/current/dist/aws /usr/local/bin/aws
+sudo ln -s /usr/local/aws-cli/v2/current/dist/aws /bin/aws
 aws --version
 rm -rf ./aws
 rm -f awscliv2.zip
