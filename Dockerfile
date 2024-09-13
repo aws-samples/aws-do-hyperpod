@@ -11,6 +11,8 @@ ENV VERBOSE="true"
 
 ADD Container-Root /
 
+RUN rm -f /hyperpod/conf
+
 ADD wd/conf /hyperpod/conf
 
 RUN export http_proxy=$http_proxy; export https_proxy=$https_proxy; export no_proxy=$no_proxy; export MOD=$MOD; /setup.sh; rm -f /setup.sh
