@@ -23,7 +23,7 @@ case "$response" in
             # Delete Kubernetes resources
             echo ""
             echo "Deleting Kubernetes resources"
-            CMD="kubectl delete -f ${ENV_HOME}impl/eks/src/manifests"
+            CMD="helm uninstall dependencies --namespace kube-system"
             if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
             eval "$CMD"
 
