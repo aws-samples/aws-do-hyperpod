@@ -2,7 +2,7 @@
 
 help(){
 	echo ""
-	echo "Usage: $0 <cluster_name>
+	echo "Usage: $0 <cluster_name>"
 	echo ""
 }
 

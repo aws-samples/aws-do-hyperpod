@@ -5,7 +5,7 @@ source ${CONF}/env_input
 
 usage(){
 	echo ""
-	echo "Usage: $0 <cluster_name>
+	echo "Usage: $0 <cluster_name>"
 	echo ""
 }
 
