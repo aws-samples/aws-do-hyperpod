@@ -20,9 +20,9 @@ else
 	shift
 
 	if [ "$node" == "" ]; then
-		CMD="kubectl get nodes -L node.kubernetes.io/instance-type -L sagemaker.amazonaws.com/node-health-status $@"
+		CMD="kubectl get nodes -L node.kubernetes.io/instance-type -L sagemaker.amazonaws.com/node-health-status -L sagemaker.amazonaws.com/deep-health-check-status $@"
 	else
-		CMD="kubectl get nodes -L node.kubernetes.io/instance-type -L sagemaker.amazonaws.com/node-health-status  $@ | grep -E \"NODE-HEALTH-STATUS|$node\""
+		CMD="kubectl get nodes -L node.kubernetes.io/instance-type -L sagemaker.amazonaws.com/node-health-status -L sagemaker.amazonaws.com/deep-health-check-status $@ | grep -E \"NODE-HEALTH-STATUS|$node\""
 	fi
 
 	if [ "${VERBOSE}" == "true" ]; then
