@@ -52,6 +52,7 @@ alias gu='nvtop.sh'
 alias gpu-util='nvtop.sh'
 alias nu='neurontop.sh'
 alias neuron-util='neurontop.sh'
+alias hp='hyperpod'
 
 if [ -f ~/.kubeon ]; then
         source ~/kube-ps1.sh
