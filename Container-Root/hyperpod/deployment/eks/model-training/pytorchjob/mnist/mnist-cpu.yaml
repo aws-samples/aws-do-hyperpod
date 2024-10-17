@@ -29,7 +29,8 @@ training_cfg:
   # script_args:
   #  - --max_context_width: 4096
   #  - --num_layers: 32
-script_args: ["--epochs: 100"]
+  script_args: 
+    - --epochs: 100
   run:
     # name: Required. Current Training Job name. Mapping to '--job-name' argument in 'start-job' command.
     name: mnist-cpu
