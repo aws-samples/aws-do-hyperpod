@@ -516,15 +516,6 @@ Resources:
         SecurityGroupIds: 
           - !Ref NoIngressSecurityGroup
 
-  # Service Role Access Entry, REMOVE 
-  # ServiceRoleAccessEntry:
-  #   Type: AWS::EKS::AccessEntry
-  #   Condition: CreateEKSCluster
-  #   Properties:
-  #     ClusterName: !Ref EKSCluster
-  #     PrincipalArn: !GetAtt ServiceRole.Arn
-  #     KubernetesGroups: 
-  #       - 'hyperpod-node-manager'
 
   VpcCNIAddOn:
     Type: 'AWS::EKS::Addon'
@@ -569,115 +560,50 @@ Resources:
             Principal:
               Service:
                 - hyperpod.sagemaker.amazonaws.com
-                 for GA
-                 for GA
                 - sagemaker.amazonaws.com
-                # for GA
             Action:
               - 'sts:AssumeRole'
       Path: /
       ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
-        - 'arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly'
-        - 'arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy'
-        - 'arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy'
-        - 'arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess'
-        - 'arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore'
-        - 'arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy'
+        - 'arn:aws:iam::aws:policy/AmazonSageMakerClusterInstanceRolePolicy'
       Policies:
-        - PolicyName: !Sub '${ResourceNamePrefix}-EKS-ReadOnly-${AWS::Region}'
+        - PolicyName: !Sub '${ResourceNamePrefix}-ExecutionRolePolicy-${AWS::Region}'
           PolicyDocument:
             Version: 2012-10-17
             Statement:
               - Effect: Allow
                 Action:
-                  - 'eks:Describe*'
-                  - 'eks:List*'
-                  - 'eks:AccessKubernetesApi'
+                  - 'ec2:AssignPrivateIpAddresses'
+                  - 'ec2:CreateNetworkInterface'
+                  - 'ec2:CreateNetworkInterfacePermission'
+                  - 'ec2:DeleteNetworkInterface'
+                  - 'ec2:DeleteNetworkInterfacePermission'
+                  - 'ec2:DescribeNetworkInterfaces'
+                  - 'ec2:DescribeVpcs'
+                  - 'ec2:DescribeDhcpOptions'
+                  - 'ec2:DescribeSubnets'
+                  - 'ec2:DescribeSecurityGroups'
+                  - 'ec2:DetachNetworkInterface'
+                  - 'ec2:ModifyNetworkInterfaceAttribute'
+                  - 'ec2:UnassignPrivateIpAddresses'
+                  - 'ecr:BatchGetImage'
+                  - 'ecr:GetAuthorizationToken'
+                  - 'ecr:GetDownloadUrlForLayer'
+                  - 'eks-auth:AssumeRoleForPodIdentity'
                 Resource: '*'
-        - PolicyName: !Sub "${ResourceNamePrefix}-SageMakerClustersExecutionRoleIPv6Policy-${AWS::Region}"
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
               - Effect: Allow
-                Action:
-                  - "ec2:AssignIpv6Addresses"
-                  - "ec2:DescribeInstances"
-                  - "ec2:DescribeTags"
-                  - "ec2:DescribeNetworkInterfaces"
-                  - "ec2:DescribeInstanceTypes"
-                Resource: "*"
-              - Effect: Allow
-                Action:
+                Action: 
                   - 'ec2:CreateTags'
+                Resource: 'arn:aws:ec2:*:*:network-interface/*'
+              - Effect: Allow
+                Action: 
+                  - 's3:ListBucket'
+                  - 's3:GetObject'
                 Resource: 
-                  - "arn:aws:ec2:*:*:network-interface/*"
+                  - !GetAtt Bucket.Arn
+                  - !Sub '${Bucket.Arn}/*'
       RoleName: !Sub '${ResourceNamePrefix}-ExecutionRole-${AWS::Region}'
 
-  # REMOVE 
-  # ServiceRole:
-  #   Type: 'AWS::IAM::Role'
-  #   Properties:
-  #     AssumeRolePolicyDocument:
-  #       Version: 2012-10-17
-  #       Statement:
-  #         - Effect: Allow
-  #           Principal:
-  #             Service:
-  #               - sagemaker.amazonaws.com
-  #               - ***REMOVED***.im.aws.internal
-  #               - hyperpod.sagemaker.amazonaws.com
-  #           Action:
-  #             - 'sts:AssumeRole'
-  #     Path: /
-  #     Policies:
-  #       - PolicyName: !Sub '${ResourceNamePrefix}-EKS-ReadOnly'
-  #         PolicyDocument:
-  #           Version: 2012-10-17
-  #           Statement:
-  #             - Effect: Allow
-  #               Action:
-  #                 - 'eks:DescribeCluster'
-  #               Resource: '*'
-  #       - PolicyName: 'SageMakerWriteLogAccess'
-  #         PolicyDocument:
-  #           Version: 2012-10-17
-  #           Statement:
-  #             - Effect: Allow
-  #               Action:
-  #                 - 'logs:CreateLogStream'
-  #                 - 'logs:CreateLogGroup'
-  #                 - 'logs:PutLogEvents'
-  #               Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/sagemaker/Clusters/*'
-  #     RoleName: 'HyperPodServiceRoleAlternative'
-
-  # ServiceRoleV2:
-  #   Type: 'AWS::IAM::Role'
-  #   Properties:
-  #     AssumeRolePolicyDocument:
-  #       Version: 2012-10-17
-  #       Statement:
-  #         - Effect: Allow
-  #           Principal:
-  #             Service:
-  #               - sagemaker.amazonaws.com
-  #               - ***REMOVED***.im.aws.internal
-  #           Action:
-  #             - 'sts:AssumeRole'
-  #     Path: /
-  #     Policies:
-  #       - PolicyName: !Sub '${ResourceNamePrefix}-EKS-ReadOnly'
-  #         PolicyDocument:
-  #           Version: 2012-10-17
-  #           Statement:
-  #             - Effect: Allow
-  #               Action:
-  #                 - 'eks:DescribeCluster'
-  #               Resource: '*'
-  #     RoleName: 'HyperPodServiceRoleV2Alternative'
-
-### ---------------- Lifcycle Policy Bucket ----------------###
-  
   Bucket:
     Type: 'AWS::S3::Bucket'
     Properties:
@@ -686,6 +612,31 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
+
+  S3Endpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Condition: EKSOrSubnet
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+            - Effect: Allow
+              Principal: '*'
+              Action:
+                - '*'
+              Resource:
+                - '*'
+      RouteTableIds:
+        - !Ref PrivateRouteTable
+      ServiceName: !Join
+        - ''
+        - - com.amazonaws.
+          - !Ref AWS::Region
+          - .s3
+      VpcId: !If 
+        - CreateEKSCluster
+        - !Ref VPC
+        - !Ref VpcId
 
 Outputs:
   VPC:
@@ -749,11 +700,6 @@ Outputs:
   AmazonSagemakerClusterExecutionRoleArn:
     Description: 'Execution Role Arn'
     Value: !GetAtt ExecutionRole.Arn
-
-  # REMOVE 
-  # AmazonSagemakerServiceRole:
-  #   Description: 'Service Role Arn'
-  #   Value: !GetAtt ServiceRole.Arn
 
   AmazonS3BucketName:
     Description: 'Bucket Name'
