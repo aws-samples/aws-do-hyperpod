@@ -17,7 +17,8 @@ if [ "$1" == "" ]; then
 else
 	node_name=$1
 	full_node_name=$(kubectl get nodes | grep $node_name | head -n 1 | cut -d ' ' -f 1)
-	pod_name=nvtop-${full_node_name:-4}
+	host_name=$(echo $full_node_name | cut -d '.' -f 1)
+	pod_name=nvtop-${host_name}
 	CMD="kubectl run -it --rm $pod_name --image iankoulski/do-nvtop:latest --overrides='{\"apiVersion\": \"v1\", \"spec\": {\"nodeSelector\": { \"kubernetes.io/hostname\": \"$full_node_name\" }}}' --command -- nvtop"
 	if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
 	eval "$CMD"
