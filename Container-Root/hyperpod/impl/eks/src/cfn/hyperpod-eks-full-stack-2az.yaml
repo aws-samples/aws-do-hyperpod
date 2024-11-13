@@ -2,29 +2,29 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description:  This template deploys a VPC, with three public and private subnets spread
   across three Availability Zones. It deploys an internet gateway, with a default
   route on the public subnets. It deploys a NAT gateway in each AZ,
-  and default routes for them in the private subnets. This template also deploys an EKS cluster,
-  an IAM execution role for SageMaker, and an S3 bucket for storing lifecycle scripts.
+  and default routes for them in the private subnets. This template also deploys an EKS cluster, 
+  an IAM execution role for SageMaker, and an S3 bucket for storing lifecycle scripts. 
 
-Metadata:
-  AWS::CloudFormation::Interface:
-    ParameterGroups:
-      -
-        Label:
+Metadata: 
+  AWS::CloudFormation::Interface: 
+    ParameterGroups: 
+      - 
+        Label: 
           default: "Set the Stack Deployment Mode"
-        Parameters:
+        Parameters: 
           - CreateEKSCluster
           - CreateSubnet
           - ResourceNamePrefix
-      -
-        Label:
+      - 
+        Label: 
           default: "Common Parameters (for Full and Integrative Deployment Modes)"
         Parameters:
           - AvailabilityZoneId
           - PrivateSubnet1CIDR
-      -
-        Label:
+      - 
+        Label: 
           default: "Full Deployment Mode Parameters"
-        Parameters:
+        Parameters: 
           - VpcCIDR
           - PublicSubnet1CIDR
           - PublicSubnet2CIDR
@@ -33,20 +33,20 @@ Metadata:
           - EKSPrivateSubnet2CIDR
           - EKSPrivateSubnet3CIDR
           - KubernetesVersion
-      -
-        Label:
+      - 
+        Label: 
           default: "Integrative Deployment Mode Parameters"
-        Parameters:
+        Parameters: 
           - VpcId
           - NatGatewayId
           - SecurityGroupId
 
-    ParameterLabels:
-      CreateEKSCluster:
+    ParameterLabels: 
+      CreateEKSCluster: 
         default: "[Full Deployment Mode] CreateEKSCluster: Do you need to create a new VPC and EKS cluster?"
       CreateSubnet:
         default: "[Integrative Deployment Mode] CreateSubnet: Do you need a new private /16 subnet for an existing VPC and EKS cluster?"
-
+     
 Parameters:
 
   CreateEKSCluster:
@@ -67,15 +67,15 @@ Parameters:
     Default: 'hyperpod-eks'
 
 ### ---------------- VPC Params ----------------###
-  AvailabilityZoneId:
+  AvailabilityZoneId: 
     Description: Please specify the Availability Zone Id you wish to deploy HyperPod ENIs into. Note, this parameter is not evaluated if you are using your own EKS Cluster and your own private subnet (CreateEKSCluster=false, CreateSubnet=false).
     Type: String
     Default: usw2-az2
     AllowedPattern: ^[a-z]{3,4}[0-9]-az[0-9]$
-    ConstraintDescription: The Availability Zone Id must match the expression ^[a-z]{3,4}[0-9]-az[0-9]$. For example, use1-az4, usw2-az2, or apse1-az2.
+    ConstraintDescription: The Availability Zone Id must match the expression ^[a-z]{3,4}[0-9]-az[0-9]$. For example, use1-az4, usw2-az2, or apse1-az2. 
 
-  VpcId:
-    Description: (OPTIONAL) If you are using an Existing EKS Cluster, please specify the Id of your VPC (CreateEKSCluster=false, CreateSubnet=true).
+  VpcId: 
+    Description: (OPTIONAL) If you are using an Existing EKS Cluster, please specify the Id of your VPC (CreateEKSCluster=false, CreateSubnet=true). 
     Type: String
     Default: vpc-1234567890abcdef0
 
@@ -85,14 +85,14 @@ Parameters:
     Default: 10.192.0.0/16
 
   SecurityGroupId:
-    Description: (OPTIONAL) If you are using an Existing EKS Cluster, please specify the Id of your cluster security group (CreateEKSCluster=false, CreateSubnet=true).
+    Description: (OPTIONAL) If you are using an Existing EKS Cluster, please specify the Id of your cluster security group (CreateEKSCluster=false, CreateSubnet=true). 
     Type: String
-    Default: sg-1234567890abcdef0
+    Default: sg-02ce123456e7893c7
 
   NatGatewayId:
-    Description: (OPTIONAL) If you are using an Existing EKS Cluster, please specify the Id of a NAT Gateway to route enternet bound traffic to (CreateEKSCluster=false, CreateSubnet=true).
+    Description: (OPTIONAL) If you are using an Existing EKS Cluster, please specify the Id of a NAT Gateway to route enternet bound traffic to (CreateEKSCluster=false, CreateSubnet=true). 
     Type: String
-    Default: nat-1234567890abcdef0
+    Default: nat-0a12bc456789de0fg
 
   PublicSubnet1CIDR:
     Description: Please enter the IP range (CIDR notation) for the public subnet in the first Availability Zone
@@ -142,9 +142,9 @@ Conditions:
       - !Ref CreateEKSCluster
       - 'true'
 
-    CreateSubnet: !And
-      - !Not [!Condition CreateEKSCluster]
-      - !Equals [!Ref CreateSubnet, 'true']
+    CreateSubnet: !And 
+      - !Not [!Condition CreateEKSCluster] 
+      - !Equals [!Ref CreateSubnet, 'true'] 
 
     EKSOrSubnet: !Or
       - !Condition CreateEKSCluster
@@ -213,17 +213,17 @@ Resources:
         - Key: Name
           Value: !Sub ${ResourceNamePrefix} Public Subnet (AZ2)
 
-  PublicSubnet3:
-    Type: AWS::EC2::Subnet
-    Condition: CreateEKSCluster
-    Properties:
-      VpcId: !Ref VPC
-      AvailabilityZone: !Select [ 2, !GetAZs  '' ]
-      CidrBlock: !Ref PublicSubnet3CIDR
-      MapPublicIpOnLaunch: true
-      Tags:
-        - Key: Name
-          Value: !Sub ${ResourceNamePrefix} Public Subnet (AZ3)
+            # PublicSubnet3:
+            #Type: AWS::EC2::Subnet
+            #Condition: CreateEKSCluster
+            #Properties:
+            #VpcId: !Ref VPC
+            #AvailabilityZone: !Select [ 2, !GetAZs  '' ]
+            #CidrBlock: !Ref PublicSubnet3CIDR
+            #MapPublicIpOnLaunch: true
+            #Tags:
+            #- Key: Name
+            #Value: !Sub ${ResourceNamePrefix} Public Subnet (AZ3)
 
   # Used for HyperPod Instance Group Placement
   PrivateSubnet1:
@@ -240,7 +240,7 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub ${ResourceNamePrefix} Private Subnet 1
-    DependsOn:
+    DependsOn: 
         - AdditionalCidrBlock1
 
   EKSPrivateSubnet1:
@@ -254,7 +254,7 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub ${ResourceNamePrefix} EKS Cluster Private Subnet 1
-
+  
   EKSPrivateSubnet2:
     Type: AWS::EC2::Subnet
     Condition: CreateEKSCluster
@@ -267,17 +267,17 @@ Resources:
         - Key: Name
           Value: !Sub ${ResourceNamePrefix} EKS Cluster Private Subnet 2
 
-  EKSPrivateSubnet3:
-    Type: AWS::EC2::Subnet
-    Condition: CreateEKSCluster
-    Properties:
-      VpcId: !Ref VPC
-      AvailabilityZone: !Select [ 2, !GetAZs  '' ]
-      CidrBlock: !Ref EKSPrivateSubnet3CIDR
-      MapPublicIpOnLaunch: false
-      Tags:
-        - Key: Name
-          Value: !Sub ${ResourceNamePrefix} EKS Cluster Private Subnet 3
+            # EKSPrivateSubnet3:
+            #Type: AWS::EC2::Subnet
+            #Condition: CreateEKSCluster
+            #Properties:
+            # VpcId: !Ref VPC
+            #AvailabilityZone: !Select [ 2, !GetAZs  '' ]
+            # CidrBlock: !Ref EKSPrivateSubnet3CIDR
+            # MapPublicIpOnLaunch: false
+            # Tags:
+            # - Key: Name
+            # Value: !Sub ${ResourceNamePrefix} EKS Cluster Private Subnet 3
 
   NatGateway1EIP:
     Type: AWS::EC2::EIP
@@ -339,18 +339,18 @@ Resources:
       RouteTableId: !Ref PublicRouteTable
       SubnetId: !Ref PublicSubnet2
 
-  PublicSubnet3RouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Condition: CreateEKSCluster
-    Properties:
-      RouteTableId: !Ref PublicRouteTable
-      SubnetId: !Ref PublicSubnet3
+        # PublicSubnet3RouteTableAssociation:
+        # Type: AWS::EC2::SubnetRouteTableAssociation
+        #Condition: CreateEKSCluster
+        #Properties:
+        # RouteTableId: !Ref PublicRouteTable
+        #SubnetId: !Ref PublicSubnet3
 
-  PrivateRouteTable:
+  PrivateRouteTable1:
     Type: AWS::EC2::RouteTable
     Condition: EKSOrSubnet
     Properties:
-      VpcId: !If
+      VpcId: !If 
         - CreateEKSCluster
         - !Ref VPC
         - !Ref VpcId
@@ -362,7 +362,7 @@ Resources:
     Type: AWS::EC2::Route
     Condition: EKSOrSubnet
     Properties:
-      RouteTableId: !Ref PrivateRouteTable
+      RouteTableId: !Ref PrivateRouteTable1
       DestinationCidrBlock: 0.0.0.0/0
       NatGatewayId: !If
         - CreateEKSCluster
@@ -373,7 +373,7 @@ Resources:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Condition: EKSOrSubnet
     Properties:
-      RouteTableId: !Ref PrivateRouteTable
+      RouteTableId: !Ref PrivateRouteTable1
       SubnetId: !Ref PrivateSubnet1
 
   NoIngressSecurityGroup:
@@ -382,7 +382,7 @@ Resources:
     Properties:
       GroupName: !Sub '${ResourceNamePrefix}-no-ingress-sg'
       GroupDescription: "Security group with no ingress rule"
-      VpcId: !If
+      VpcId: !If 
         - CreateEKSCluster
         - !Ref VPC
         - !Ref VpcId
@@ -436,7 +436,7 @@ Resources:
       ToPort: 1023
       SourceSecurityGroupId: !Ref NoIngressSecurityGroup
 
-  CrossSGRuleIngress:
+  CrossSGRuleIngress: 
     Type: AWS::EC2::SecurityGroupIngress
     Condition: CreateSubnet
     Properties:
@@ -445,7 +445,7 @@ Resources:
       IpProtocol: -1
       SourceSecurityGroupId: !Ref SecurityGroupId
 
-  CrossSGRuleEgress:
+  CrossSGRuleEgress: 
     Type: AWS::EC2::SecurityGroupEgress
     Condition: CreateSubnet
     Properties:
@@ -454,7 +454,7 @@ Resources:
       IpProtocol: -1
       DestinationSecurityGroupId: !Ref SecurityGroupId
 
-  CrossSGRuleIngress2:
+  CrossSGRuleIngress2: 
     Type: AWS::EC2::SecurityGroupIngress
     Condition: CreateSubnet
     Properties:
@@ -463,7 +463,7 @@ Resources:
       IpProtocol: -1
       SourceSecurityGroupId: !Ref NoIngressSecurityGroup
 
-  CrossSGRuleEgress2:
+  CrossSGRuleEgress2: 
     Type: AWS::EC2::SecurityGroupEgress
     Condition: CreateSubnet
     Properties:
@@ -512,8 +512,8 @@ Resources:
         SubnetIds:
            - !Ref EKSPrivateSubnet1
            - !Ref EKSPrivateSubnet2
-           - !Ref EKSPrivateSubnet3
-        SecurityGroupIds:
+             #  - !Ref EKSPrivateSubnet3
+        SecurityGroupIds: 
           - !Ref NoIngressSecurityGroup
 
 
@@ -559,50 +559,35 @@ Resources:
           - Effect: Allow
             Principal:
               Service:
+                - hyperpod.sagemaker.amazonaws.com
                 - sagemaker.amazonaws.com
             Action:
               - 'sts:AssumeRole'
       Path: /
       ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/AmazonSageMakerClusterInstanceRolePolicy'
+        - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+        - 'arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly'
+        - 'arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy'
+        - 'arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy'
+        - 'arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess'
+        - 'arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore'
+        - 'arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy'
       Policies:
-        - PolicyName: !Sub '${ResourceNamePrefix}-ExecutionRolePolicy-${AWS::Region}'
+        - PolicyName: !Sub '${ResourceNamePrefix}-EKS-ReadOnly-${AWS::Region}'
           PolicyDocument:
             Version: 2012-10-17
             Statement:
               - Effect: Allow
                 Action:
-                  - 'ec2:AssignPrivateIpAddresses'
-                  - 'ec2:CreateNetworkInterface'
-                  - 'ec2:CreateNetworkInterfacePermission'
-                  - 'ec2:DeleteNetworkInterface'
-                  - 'ec2:DeleteNetworkInterfacePermission'
-                  - 'ec2:DescribeNetworkInterfaces'
-                  - 'ec2:DescribeVpcs'
-                  - 'ec2:DescribeDhcpOptions'
-                  - 'ec2:DescribeSubnets'
-                  - 'ec2:DescribeSecurityGroups'
-                  - 'ec2:DetachNetworkInterface'
-                  - 'ec2:ModifyNetworkInterfaceAttribute'
-                  - 'ec2:UnassignPrivateIpAddresses'
-                  - 'ecr:BatchGetImage'
-                  - 'ecr:GetAuthorizationToken'
-                  - 'ecr:GetDownloadUrlForLayer'
-                  - 'eks-auth:AssumeRoleForPodIdentity'
+                  - 'eks:Describe*'
+                  - 'eks:List*'
+                  - 'eks:AccessKubernetesApi'
                 Resource: '*'
-              - Effect: Allow
-                Action:
-                  - 'ec2:CreateTags'
-                Resource: 'arn:aws:ec2:*:*:network-interface/*'
-              - Effect: Allow
-                Action:
-                  - 's3:ListBucket'
-                  - 's3:GetObject'
-                Resource:
-                  - !GetAtt Bucket.Arn
-                  - !Sub '${Bucket.Arn}/*'
       RoleName: !Sub '${ResourceNamePrefix}-ExecutionRole-${AWS::Region}'
 
+
+### ---------------- Lifcycle Policy Bucket ----------------###
+  
   Bucket:
     Type: 'AWS::S3::Bucket'
     Properties:
@@ -612,37 +597,11 @@ Resources:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
 
-  S3Endpoint:
-    Type: AWS::EC2::VPCEndpoint
-    Condition: EKSOrSubnet
-    Properties:
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-            - Effect: Allow
-              Principal: '*'
-              Action:
-                - '*'
-              Resource:
-                - '*'
-      RouteTableIds:
-        - !Ref PublicRouteTable
-        - !Ref PrivateRouteTable
-      ServiceName: !Join
-        - ''
-        - - com.amazonaws.
-          - !Ref AWS::Region
-          - .s3
-      VpcId: !If
-        - CreateEKSCluster
-        - !Ref VPC
-        - !Ref VpcId
-
 Outputs:
   VPC:
     Condition: EKSOrSubnet
     Description: A reference to the created VPC
-    Value: !If
+    Value: !If 
       - CreateEKSCluster
       - !Ref VPC
       - !Ref VpcId
@@ -657,33 +616,33 @@ Outputs:
     Description: A reference to the public subnet in the 2nd Availability Zone
     Value: !Ref PublicSubnet2
 
-  PublicSubnet3:
-    Condition: CreateEKSCluster
-    Description: A reference to the public subnet in the 3rd Availability Zone
-    Value: !Ref PublicSubnet3
+      # PublicSubnet3:
+    #Condition: CreateEKSCluster
+      #Description: A reference to the public subnet in the 3rd Availability Zone
+      #    Value: !Ref PublicSubnet3
 
   PrivateSubnet1:
-    Condition: EKSOrSubnet
-    Description: A reference to the private subnet used for HyperPod ENIs
+    Condition: EKSOrSubnet 
+    Description: A reference to the private subnet used for HyperPod ENIs 
     Value: !Ref PrivateSubnet1
 
   EKSPrivateSubnet1:
     Condition: CreateEKSCluster
     Description: A reference to the EKS cluster private subnet in the 1st Availability Zone
     Value: !Ref EKSPrivateSubnet1
-
+  
   EKSPrivateSubnet2:
     Condition: CreateEKSCluster
     Description: A reference to the EKS cluster private subnet in the 2nd Availability Zone
     Value: !Ref EKSPrivateSubnet2
-
-  EKSPrivateSubnet3:
-    Condition: CreateEKSCluster
-    Description: A reference to the EKS cluster private subnet in the 3rd Availability Zone
-    Value: !Ref EKSPrivateSubnet3
+  
+      # EKSPrivateSubnet3:
+      #Condition: CreateEKSCluster
+      #Description: A reference to the EKS cluster private subnet in the 3rd Availability Zone
+      #Value: !Ref EKSPrivateSubnet3
 
   NoIngressSecurityGroup:
-    Condition: EKSOrSubnet
+    Condition: EKSOrSubnet 
     Description: Security group with no ingress rule
     Value: !Ref NoIngressSecurityGroup
 
@@ -703,3 +662,5 @@ Outputs:
 
   AmazonS3BucketName:
     Description: 'Bucket Name'
+    Value: !Ref Bucket
+
