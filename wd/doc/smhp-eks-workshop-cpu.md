@@ -17,12 +17,12 @@ Follow this workflow for AWS events hosting [this workshop](https://bit.ly/smhp-
     5. Pytorch DDP on CPU
         a. Setup
         b. Training
+            8. Resiliency
+                a. Manual Reboot
     6. Ray on HyperPod
         a. Setup
         c. Serving Stable Diffusion Model for Inference
     7. Observability
         1. Amazon CloudWatch Container Insights
             b. Container Insights Dashboards
-    8. Resiliency
-        a. Manual Replacement
 
