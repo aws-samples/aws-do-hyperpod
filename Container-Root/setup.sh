@@ -18,11 +18,6 @@ apt-get install -y curl jq vim nano less unzip git gettext-base groff sudo htop 
 # Install yq
 ./hyperpod/setup/install-yq.sh
 
-# Install aws cli
-pushd ./hyperpod/setup
-./install-aws-cli.sh
-popd
-
 # Install eksctl
 ./hyperpod/setup/eks/install-eksctl.sh
 
@@ -74,6 +69,11 @@ if [ ! "$MOD" == "compact" ]; then
 
 	pip cache purge
 fi
+
+# Install aws cli
+pushd ./hyperpod/setup
+./install-aws-cli.sh
+popd
 
 # Generate SBOM and store it in the root of the container image
 ./sbom.sh
