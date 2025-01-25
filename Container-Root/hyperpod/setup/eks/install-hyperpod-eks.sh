@@ -12,7 +12,7 @@ curl 'https://raw.githubusercontent.com/aws-samples/awsome-distributed-training/
 
 ## scripts
 mkdir scripts
-curl 'https://raw.githubusercontent.com/aws-samples/awsome-distributed-training/main/1.architectures/7.sagemaker-hyperpod-eks/create_config.sh' --output scripts/create_config.sh
+#curl 'https://raw.githubusercontent.com/aws-samples/awsome-distributed-training/main/1.architectures/7.sagemaker-hyperpod-eks/create_config.sh' --output scripts/create_config.sh
 chmod +x scripts/*.sh
 
 
