@@ -53,6 +53,7 @@ alias gpu-util='nvtop.sh'
 alias nu='neurontop.sh'
 alias neuron-util='neurontop.sh'
 alias hp='hyperpod'
+alias nm='node-metadata.sh'
 
 if [ -f ~/.kubeon ]; then
         source ~/kube-ps1.sh
