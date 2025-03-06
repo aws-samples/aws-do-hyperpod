@@ -35,26 +35,13 @@ if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
 STACK_COUNT=$(eval $CMD)
 echo "STACK_COUNT=$STACK_COUNT"
 if [ "$STACK_COUNT" == "0" ]; then
-        
+
+	# Create parameter file ${ENV_HOME}${CONF}/parameters.json
+	cat cfn/parameters.json-template | envsubst > ${ENV_HOME}${CONF}/parameters.json
+
 	# Create stack
 	echo "Creating CloudFormation stack ${STACK_ID} ..."
-	/util/cfn-create.sh ${STACK_ID} cfn/hyperpod-eks-full-stack.yaml \
-ParameterKey=CreateEKSCluster,ParameterValue=$CREATE_EKS_CLUSTER \
-ParameterKey=CreateSubnet,ParameterValue=${CREATE_SUBNET} \
-ParameterKey=ResourceNamePrefix,ParameterValue=$RESOURCE_NAME_PREFIX \
-ParameterKey=AvailabilityZoneId,ParameterValue=$AVAILABILITY_ZONE_ID \
-ParameterKey=VpcId,ParameterValue=$VPC_ID \
-ParameterKey=VpcCIDR,ParameterValue=$VPC_CIDR \
-ParameterKey=SecurityGroupId,ParameterValue=$SECURITY_GROUP_ID \
-ParameterKey=NatGatewayId,ParameterValue=$NAT_GATEWAY_ID \
-ParameterKey=PublicSubnet1CIDR,ParameterValue=$PUBLIC_SUBNET1_CIDR \
-ParameterKey=PublicSubnet2CIDR,ParameterValue=$PUBLIC_SUBNET2_CIDR \
-ParameterKey=PublicSubnet3CIDR,ParameterValue=$PUBLIC_SUBNET3_CIDR \
-ParameterKey=PrivateSubnet1CIDR,ParameterValue=$PRIVATE_SUBNET1_CIDR \
-ParameterKey=KubernetesVersion,ParameterValue=$KUBERNETES_VERSION \
-ParameterKey=EKSPrivateSubnet1CIDR,ParameterValue=$EKS_PRIVATE_SUBNET1_CIDR \
-ParameterKey=EKSPrivateSubnet2CIDR,ParameterValue=$EKS_PRIVATE_SUBNET2_CIDR \
-ParameterKey=EKSPrivateSubnet3CIDR,ParameterValue=$EKS_PRIVATE_SUBNET3_CIDR
+	/util/cfn-create.sh ${STACK_ID} cfn/hyperpod-eks-full-stack.yaml file://${ENV_HOME}${CONF}/parameters.json
 
 	# Connect to EKS cluster
         echo "Connecting to EKS cluster ..."
@@ -72,6 +59,8 @@ if [ ! "$DEPENDENCIES_CNT" == 0 ]; then
 	CMD="helm uninstall dependencies --namespace kube-system"
 	if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
 	eval "$CMD"
+	echo "Sleeping for 5 sec to allow uninstall to complete ..."
+	sleep 5
 fi
 
 echo "Installing helm chart ..."
@@ -89,9 +78,8 @@ source ${ENV_HOME}${CONF}/env_input
 scripts/create_config.sh
 source ./env_vars
 
-
 # Upload lifecycle scripts
-aws s3 cp lifecyclescripts/on_create.sh s3://$BUCKET_NAME
+aws s3 cp lifecyclescripts/on_create.sh s3://$S3_BUCKET_NAME
 
 # Create HyperPod config 
 echo "Generating HyperPod config ..."

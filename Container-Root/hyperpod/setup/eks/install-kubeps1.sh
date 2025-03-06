@@ -63,7 +63,7 @@ fi
 
 export TERM=xterm-256color
 
-export PATH=$PATH:/root/go/bin:/hyperpod/ops/eks:.
+export PATH=$PATH:/root/go/bin:/hyperpod/ops/eks:/hyperpod/ops/slurm:/hyperpod/ops:.
 
 EOF
 

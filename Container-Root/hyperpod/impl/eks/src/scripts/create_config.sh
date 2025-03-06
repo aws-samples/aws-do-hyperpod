@@ -16,14 +16,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-: "${STACK_ID:=hyperpod-eks-full-stack}"
-
-# Check for JQ
-if ! command -v jq &> /dev/null
-then
-    echo -e "please install jq...\nsudo yum install -y jq or brew install jq"
-    exit 1
-fi
+# : "${STACK_ID:-hyperpod-eks-full-stack}"
 
 # Clear previously set env_vars 
 > env_vars 
@@ -37,171 +30,170 @@ echo "export AWS_REGION=${AWS_REGION}" >> env_vars
 echo "[INFO] AWS_REGION = ${AWS_REGION}"
 
 # Retrieve EKS CLUSTER Name if not already defined
-if [ "$EKS_CLUSTER_NAME" == "" ]; then
+echo "region: $AWS_REGION"
+
+if [[ -z "${EKS_CLUSTER_NAME}" ]]; then
+    # Only retrieve from CloudFormation if not already set
     export EKS_CLUSTER_NAME=`aws cloudformation describe-stacks \
         --stack-name $STACK_ID \
         --query 'Stacks[0].Outputs[?OutputKey==\`ClusterName\`].OutputValue' \
         --region ${AWS_REGION} \
         --output text`
-fi
 
-if [[ ! -z $EKS_CLUSTER_NAME ]]; then
-    echo "export EKS_CLUSTER_NAME=${EKS_CLUSTER_NAME}" >> env_vars
-    echo "[INFO] EKS_CLUSTER_NAME = ${EKS_CLUSTER_NAME}"
+    if [[ ! -z $EKS_CLUSTER_NAME ]]; then
+        echo "export EKS_CLUSTER_NAME=${EKS_CLUSTER_NAME}" >> env_vars
+        echo "[INFO] EKS_CLUSTER_NAME = ${EKS_CLUSTER_NAME}"
+    else
+        echo "[ERROR] failed to retrieve EKS_CLUSTER_NAME"
+        return 1
+    fi
 else
-    echo "[ERROR] failed to retrieve EKS_CLUSTER_NAME"
-    return 1
+    echo "[INFO] Using existing EKS_CLUSTER_NAME = ${EKS_CLUSTER_NAME}"
+    echo "export EKS_CLUSTER_NAME=${EKS_CLUSTER_NAME}" >> env_vars
 fi
 
 # Retrieve EKS CLUSTER ARN
-export EKS_CLUSTER_ARN=`aws cloudformation describe-stacks \
-    --stack-name $STACK_ID \
-    --query 'Stacks[0].Outputs[?OutputKey==\`ClusterArn\`].OutputValue' \
-    --region ${AWS_REGION} \
-    --output text`
+# Check if EKS_CLUSTER_ARN is already set and not empty
+if [[ -z "${EKS_CLUSTER_ARN}" ]]; then
+    # First attempt: retrieve from CloudFormation
+    export EKS_CLUSTER_ARN=`aws cloudformation describe-stacks \
+        --stack-name $STACK_ID \
+        --query 'Stacks[0].Outputs[?OutputKey==\`ClusterArn\`].OutputValue' \
+        --region ${AWS_REGION} \
+        --output text`
 
-if [ "$EKS_CLUSTER_ARN" == "" ]; then
-    if [ ! "$EKS_CLUSTER_NAME" == "" ]; then
-        AWS_ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
-        if [ ! "$AWS_ACCOUNT" == "" ]; then
-            export EKS_CLUSTER_ARN="arn:aws:eks:${AWS_REGION}:${AWS_ACCOUNT}:cluster/${EKS_CLUSTER_NAME}"
+    # Second attempt: verify cluster exists and get ARN
+    if [[ -z "${EKS_CLUSTER_ARN}" && ! -z "${EKS_CLUSTER_NAME}" ]]; then
+        # Verify cluster exists
+        if aws eks describe-cluster --name ${EKS_CLUSTER_NAME} --region ${AWS_REGION} &>/dev/null; then
+            export EKS_CLUSTER_ARN=`aws eks describe-cluster \
+                --name ${EKS_CLUSTER_NAME} \
+                --query 'cluster.arn' \
+                --region ${AWS_REGION} \
+                --output text`
+            echo "[INFO] Retrieved EKS_CLUSTER_ARN from existing cluster"
+        else
+            echo "[ERROR] EKS cluster ${EKS_CLUSTER_NAME} does not exist in region ${AWS_REGION}"
+            return 1
         fi
     fi
-fi
 
-if [ ! "$EKS_CLUSTER_ARN" == "" ]; then
-    echo "export EKS_CLUSTER_ARN=${EKS_CLUSTER_ARN}" >> env_vars
-    echo "[INFO] EKS_CLUSTER_ARN = ${EKS_CLUSTER_ARN}"
+    if [[ ! -z "${EKS_CLUSTER_ARN}" ]]; then
+        echo "export EKS_CLUSTER_ARN=${EKS_CLUSTER_ARN}" >> env_vars
+        echo "[INFO] EKS_CLUSTER_ARN = ${EKS_CLUSTER_ARN}"
+    else
+        echo "[ERROR] failed to retrieve EKS_CLUSTER_ARN"
+        return 1
+    fi
 else
-    echo "[ERROR] failed to retrieve EKS_CLUSTER_ARN"
-    return 1
+    echo "[INFO] Using existing EKS_CLUSTER_ARN = ${EKS_CLUSTER_ARN}"
 fi
 
-# Retrieve S3 Bucket Name 
-export BUCKET_NAME=`aws cloudformation describe-stacks \
-    --stack-name $STACK_ID \
-    --query 'Stacks[0].Outputs[?OutputKey==\`AmazonS3BucketName\`].OutputValue' \
-    --region ${AWS_REGION} \
-    --output text`
+# Check if S3_BUCKET_NAME is already set and not empty
+if [[ -z "${S3_BUCKET_NAME}" ]]; then
+    # Retrieve S3 Bucket Name 
+    export S3_BUCKET_NAME=`aws cloudformation describe-stacks \
+        --stack-name $STACK_ID \
+        --query 'Stacks[0].Outputs[?OutputKey==\`AmazonS3BucketName\`].OutputValue' \
+        --region ${AWS_REGION} \
+        --output text`
 
-if [[ ! -z $BUCKET_NAME ]]; then
-    echo "export BUCKET_NAME=${BUCKET_NAME}" >> env_vars
-    echo "[INFO] BUCKET_NAME = ${BUCKET_NAME}"
+    if [[ ! -z $S3_BUCKET_NAME ]]; then
+        echo "export S3_BUCKET_NAME=${S3_BUCKET_NAME}" >> env_vars
+        echo "[INFO] S3_BUCKET_NAME = ${S3_BUCKET_NAME}"
+    else
+        echo "[ERROR] failed to retrieve S3_BUCKET_NAME"
+        return 1
+    fi
 else
-    echo "[ERROR] failed to retrieve BUCKET_NAME"
-    return 1
+    echo "[INFO] Using existing S3_BUCKET_NAME = ${S3_BUCKET_NAME}"
+    echo "export S3_BUCKET_NAME=${S3_BUCKET_NAME}" >> env_vars
 fi
 
-# Retrieve SageMaker Execution Role 
-export EXECUTION_ROLE=`aws cloudformation describe-stacks \
-    --stack-name $STACK_ID \
-    --query 'Stacks[0].Outputs[?OutputKey==\`AmazonSagemakerClusterExecutionRoleArn\`].OutputValue' \
-    --region ${AWS_REGION} \
-    --output text`
+# Check if EXECUTION_ROLE is already set and not empty
+if [[ -z "${EXECUTION_ROLE}" ]]; then
+    # Retrieve SageMaker Execution Role 
+    export EXECUTION_ROLE=`aws cloudformation describe-stacks \
+        --stack-name $STACK_ID \
+        --query 'Stacks[0].Outputs[?OutputKey==\`AmazonSagemakerClusterExecutionRoleArn\`].OutputValue' \
+        --region ${AWS_REGION} \
+        --output text`
 
-if [[ ! -z $EXECUTION_ROLE ]]; then
+    if [[ ! -z $EXECUTION_ROLE ]]; then
+        echo "export EXECUTION_ROLE=${EXECUTION_ROLE}" >> env_vars
+        echo "[INFO] EXECUTION_ROLE = ${EXECUTION_ROLE}"
+    else
+        echo "[ERROR] failed to retrieve EXECUTION_ROLE"
+        return 1
+    fi
+else
+    echo "[INFO] Using existing EXECUTION_ROLE = ${EXECUTION_ROLE}"
     echo "export EXECUTION_ROLE=${EXECUTION_ROLE}" >> env_vars
-    echo "[INFO] EXECUTION_ROLE = ${EXECUTION_ROLE}"
-else
-    echo "[ERROR] failed to retrieve EXECUTION_ROLE"
-    return 1
 fi
 
-# Retrieve VPC ID
-if [ "$VPC_ID" == "" ]; then
+# Check if VPC_ID is already set and not empty
+if [[ -z "${VPC_ID}" ]]; then
+    # Only retrieve from CloudFormation if not already set
     export VPC_ID=`aws cloudformation describe-stacks \
         --stack-name $STACK_ID \
         --query 'Stacks[0].Outputs[?OutputKey==\`VPC\`].OutputValue' \
         --region ${AWS_REGION} \
         --output text`
-fi
 
-if [[ ! -z $VPC_ID ]]; then
-    echo "export VPC_ID=${VPC_ID}" >> env_vars
-    echo "[INFO] VPC_ID = ${VPC_ID}"
+    if [[ ! -z $VPC_ID ]]; then
+        echo "export VPC_ID=${VPC_ID}" >> env_vars
+        echo "[INFO] VPC_ID = ${VPC_ID}"
+    else
+        echo "[ERROR] failed to retrieve VPC_ID"
+        return 1
+    fi
 else
-    echo "[ERROR] failed to retrieve VPC ID"
-    return 1
+    echo "[INFO] Using existing VPC_ID = ${VPC_ID}"
+    echo "export VPC_ID=${VPC_ID}" >> env_vars
 fi
 
-# Grab the private subnet id
-if [ "$SUBNET_ID" == "" ]; then
-    export SUBNET_ID=`aws cloudformation describe-stacks \
+# Check if PRIVATE_SUBNET_ID is already set and not empty
+if [[ -z "${PRIVATE_SUBNET_ID}" ]]; then
+    # Only retrieve from CloudFormation if not already set
+    export PRIVATE_SUBNET_ID=`aws cloudformation describe-stacks \
         --stack-name $STACK_ID \
         --query 'Stacks[0].Outputs[?OutputKey==\`PrivateSubnet1\`].OutputValue' \
         --region ${AWS_REGION} \
         --output text`
-fi
 
-if [[ ! -z $SUBNET_ID ]]; then
-    echo "export SUBNET_ID=${SUBNET_ID}" >> env_vars
-    echo "[INFO] SUBNET_ID = ${SUBNET_ID}"
+    if [[ ! -z $PRIVATE_SUBNET_ID ]]; then
+        echo "export PRIVATE_SUBNET_ID=${PRIVATE_SUBNET_ID}" >> env_vars
+        echo "[INFO] PRIVATE_SUBNET_ID = ${PRIVATE_SUBNET_ID}"
+    else
+        echo "[ERROR] failed to retrieve PRIVATE_SUBNET_ID"
+        return 1
+    fi
 else
-    echo "[ERROR] failed to retrieve SUBNET ID"
-    return 1
+    echo "[INFO] Using existing PRIVATE_SUBNET_ID = ${PRIVATE_SUBNET_ID}"
+    echo "export PRIVATE_SUBNET_ID=${PRIVATE_SUBNET_ID}" >> env_vars
 fi
 
-# Grab the public ssubnet id
-# export PUBLIC_SUBNET_ID=`aws cloudformation describe-stacks \
-#     --stack-name $STACK_ID \
-#     --query 'Stacks[0].Outputs[?OutputKey==\`PublicSubnet1\`].OutputValue' \
-#     --region ${AWS_REGION} \
-#     --output text`
-
-# if [[ ! -z $PUBLIC_SUBNET_ID ]]; then
-#     echo "export PUBLIC_SUBNET_ID=${PUBLIC_SUBNET_ID}" >> env_vars
-#     echo "[INFO] PUBLIC_SUBNET_ID = ${PUBLIC_SUBNET_ID}"
-# else
-#     echo "[ERROR] failed to retrieve Public SUBNET ID"
-#     return 1
-# fi
-
-# Get FSx Filesystem id from CloudFormation
-# export FSX_ID=`aws cloudformation describe-stacks \
-#     --stack-name $STACK_ID \
-#     --query 'Stacks[0].Outputs[?OutputKey==\`FSxLustreFilesystemId\`].OutputValue' \
-#     --region ${AWS_REGION} \
-#     --output text`
-
-# if [[ ! -z $FSX_ID ]]; then
-#     echo "export FSX_ID=${FSX_ID}" >> env_vars
-#     echo "[INFO] FSX_ID = ${FSX_ID}"
-# else
-#     echo "[ERROR] failed to retrieve FSX ID"
-#     return 1
-# fi
-
-# Get FSx Filesystem Mountname from CloudFormation
-# export FSX_MOUNTNAME=`aws cloudformation describe-stacks \
-#     --stack-name $STACK_ID \
-#     --query 'Stacks[0].Outputs[?OutputKey==\`FSxLustreFilesystemMountname\`].OutputValue' \
-#     --region ${AWS_REGION} \
-#     --output text`
-
-# if [[ ! -z $FSX_MOUNTNAME ]]; then
-#     echo "export FSX_MOUNTNAME=${FSX_MOUNTNAME}" >> env_vars
-#     echo "[INFO] FSX_MOUNTNAME = ${FSX_MOUNTNAME}"
-# else
-#     echo "[ERROR] failed to retrieve FSX Mountname"
-#     return 1
-# fi
-
-# Get Security Group from CloudFormation
-if [ "$SECURITY_GROUP" == "" ]; then
-    export SECURITY_GROUP=`aws cloudformation describe-stacks \
+# Check if SECURITY_GROUP_ID is already set and not empty
+if [[ -z "${SECURITY_GROUP_ID}" ]]; then
+    # Only retrieve from CloudFormation if not already set
+    export SECURITY_GROUP_ID=`aws cloudformation describe-stacks \
         --stack-name $STACK_ID \
         --query 'Stacks[0].Outputs[?OutputKey==\`NoIngressSecurityGroup\`].OutputValue' \
         --region ${AWS_REGION} \
         --output text`
+
+    if [[ ! -z $SECURITY_GROUP_ID ]]; then
+        echo "export SECURITY_GROUP_ID=${SECURITY_GROUP_ID}" >> env_vars
+        echo "[INFO] SECURITY_GROUP_ID = ${SECURITY_GROUP_ID}"
+    else
+        echo "[ERROR] failed to retrieve SECURITY_GROUP_ID"
+        return 1
+    fi
+else
+    echo "[INFO] Using existing SECURITY_GROUP_ID = ${SECURITY_GROUP_ID}"
+    echo "export SECURITY_GROUP_ID=${SECURITY_GROUP_ID}" >> env_vars
 fi
 
-if [[ ! -z $SECURITY_GROUP ]]; then
-    echo "export SECURITY_GROUP=${SECURITY_GROUP}" >> env_vars
-    echo "[INFO] SECURITY_GROUP = ${SECURITY_GROUP}"
-else
-    echo "[ERROR] failed to retrieve FSX Security Group"
-    return 1
-fi
 
 # Define accelerated compute instance type.
 if [ -z ${ACCEL_INSTANCE_TYPE} ]; then
@@ -212,12 +204,12 @@ echo "export ACCEL_INSTANCE_TYPE=${ACCEL_INSTANCE_TYPE}" >> env_vars
 echo "[INFO] ACCEL_INSTANCE_TYPE = ${ACCEL_INSTANCE_TYPE}"
 
 # Set number of accelerated compute nodes to deploy 
-if [ -z ${ACCEL_COUNT} ]; then
-    echo "[WARNING] ACCEL_COUNT environment variable is not set, automatically set to 1."
-    export ACCEL_COUNT=1
+if [ -z ${ACCEL_INSTANCE_COUNT} ]; then
+    echo "[WARNING] ACCEL_INSTANCE_COUNT environment variable is not set, automatically set to 1."
+    export ACCEL_INSTANCE_COUNT=1
 fi
-echo "export ACCEL_COUNT=${ACCEL_COUNT}" >> env_vars
-echo "[INFO] ACCEL_COUNT = ${ACCEL_COUNT}"
+echo "export ACCEL_INSTANCE_COUNT=${ACCEL_INSTANCE_COUNT}" >> env_vars
+echo "[INFO] ACCEL_INSTANCE_COUNT = ${ACCEL_INSTANCE_COUNT}"
 
 # Set the EBS Volume size for the accelerated compute nodes 
 if [ -z ${ACCEL_VOLUME_SIZE} ]; then
@@ -236,12 +228,12 @@ echo "export GEN_INSTANCE_TYPE=${GEN_INSTANCE_TYPE}" >> env_vars
 echo "[INFO] GEN_INSTANCE_TYPE = ${GEN_INSTANCE_TYPE}"
 
 # Set the number of general purpose nodes to deploy
-if [ -z ${GEN_COUNT} ]; then
-    echo "[WARNING] GEN_COUNT environment variable is not set, automatically set to 1."
-    export GEN_COUNT=1
+if [ -z ${GEN_INSTANCE_COUNT} ]; then
+    echo "[WARNING] GEN_INSTANCE_COUNT environment variable is not set, automatically set to 1."
+    export GEN_INSTANCE_COUNT=1
 fi
-echo "export GEN_COUNT=${GEN_COUNT}" >> env_vars
-echo "[INFO] GEN_COUNT = ${GEN_COUNT}"
+echo "export GEN_INSTANCE_COUNT=${GEN_INSTANCE_COUNT}" >> env_vars
+echo "[INFO] GEN_INSTANCE_COUNT = ${GEN_INSTANCE_COUNT}"
 
 # Set the EBS Volume size for the general purpose compute nodes 
 if [ -z ${GEN_VOLUME_SIZE} ]; then
@@ -250,14 +242,6 @@ if [ -z ${GEN_VOLUME_SIZE} ]; then
 fi
 echo "export GEN_VOLUME_SIZE=${GEN_VOLUME_SIZE}" >> env_vars
 echo "[INFO] GEN_VOLUME_SIZE = ${GEN_VOLUME_SIZE}"
-
-# Set burn-in 
-# if [ -z ${BURN_ENABLED} ]; then
-#     echo "[WARNING] BURN_ENABLED environment variable is not set, automatically set to true."
-#     export BURN_ENABLED=true
-# fi
-# echo "export BURN_ENABLED=${BURN_ENABLED}" >> env_vars
-# echo "[INFO] BURN_ENABLED = ${BURN_ENABLED}"
 
 # Set auto-recovery
 if [ -z ${NODE_RECOVERY} ]; then

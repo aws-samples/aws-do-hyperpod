@@ -90,7 +90,7 @@ Parameters:
     Default: Replace with your Security Group ID
 
   NatGatewayId:
-    Description: If you are using an Existing EKS Cluster, please specify the Id of a NAT Gateway to route enternet bound traffic to. 
+    Description: (OPTIONAL) If you are using an Existing EKS Cluster, please specify the Id of a NAT Gateway to route enternet bound traffic to (CreateEKSCluster=false, CreateSubnet=true). 
     Type: String
     Default: Replace with your NatGateway ID
 
@@ -118,7 +118,7 @@ Parameters:
   KubernetesVersion:
     Description: Kubernetes version to use for EKS cluster
     Type: String
-    Default: '1.29'
+    Default: '1.31'
 
   EKSPrivateSubnet1CIDR:
     Description: Please enter the IP range (CIDR notation) for the EKS private subnet in the first Availability Zone. EKS will use this subnet to deploy cross-account ENIs.
@@ -346,7 +346,7 @@ Resources:
       RouteTableId: !Ref PublicRouteTable
       SubnetId: !Ref PublicSubnet3
 
-  PrivateRouteTable1:
+  PrivateRouteTable:
     Type: AWS::EC2::RouteTable
     Condition: EKSOrSubnet
     Properties:
@@ -362,7 +362,7 @@ Resources:
     Type: AWS::EC2::Route
     Condition: EKSOrSubnet
     Properties:
-      RouteTableId: !Ref PrivateRouteTable1
+      RouteTableId: !Ref PrivateRouteTable
       DestinationCidrBlock: 0.0.0.0/0
       NatGatewayId: !If
         - CreateEKSCluster
@@ -373,7 +373,7 @@ Resources:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Condition: EKSOrSubnet
     Properties:
-      RouteTableId: !Ref PrivateRouteTable1
+      RouteTableId: !Ref PrivateRouteTable
       SubnetId: !Ref PrivateSubnet1
 
   NoIngressSecurityGroup:
@@ -559,7 +559,6 @@ Resources:
           - Effect: Allow
             Principal:
               Service:
-                - hyperpod.sagemaker.amazonaws.com
                 - sagemaker.amazonaws.com
             Action:
               - 'sts:AssumeRole'
@@ -627,6 +626,7 @@ Resources:
               Resource:
                 - '*'
       RouteTableIds:
+        - !Ref PublicRouteTable
         - !Ref PrivateRouteTable
       ServiceName: !Join
         - ''

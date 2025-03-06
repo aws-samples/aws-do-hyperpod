@@ -20,12 +20,13 @@ echo "Deploying stack: $STACK_NAME"
 echo "Using template: $TEMPLATE_FILE"
 echo "Parameters: $@"
 
-aws cloudformation create-stack \
-  --stack-name $STACK_NAME \
-  --template-body file://$TEMPLATE_FILE \
-  --parameters "$@" \
-  --capabilities "CAPABILITY_IAM" "CAPABILITY_NAMED_IAM"
+CMD="aws cloudformation create-stack --stack-name $STACK_NAME  --template-body file://$TEMPLATE_FILE  --parameters \"$@\"  --capabilities \"CAPABILITY_IAM\" \"CAPABILITY_NAMED_IAM\""
+
+if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
+eval "$CMD"
 
 # Wait for cloudformation template to complete
-aws cloudformation wait stack-create-complete --stack-name $STACK_NAME
+CMD="aws cloudformation wait stack-create-complete --stack-name $STACK_NAME"
+if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
+eval "$CMD"
 

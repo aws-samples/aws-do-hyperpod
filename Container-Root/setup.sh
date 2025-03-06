@@ -13,7 +13,7 @@ fi
 
 # Install basic tools
 apt-get update -y && apt-get upgrade -y
-apt-get install -y curl jq vim nano less unzip git gettext-base groff sudo htop bash-completion wget bc gcc
+apt-get install -y curl jq vim nano less unzip git gettext-base groff sudo htop bash-completion wget bc gcc bsdmainutils
 
 # Install yq
 ./hyperpod/setup/install-yq.sh
