@@ -40,6 +40,10 @@ apt-get install -y curl jq vim nano less unzip git gettext-base groff sudo htop 
 ./hyperpod/setup/install-python.sh
 python -m pip install torchx[kubernetes]
 
+# Install stern using krew
+./hyperpod/setup/eks/install-krew.sh
+./hyperpod/setup/eks/install-stern.sh
+
 # Install kubeps1 and configure bashrc aliases 
 ./hyperpod/setup/eks/install-kubeps1.sh
 

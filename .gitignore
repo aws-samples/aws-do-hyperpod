@@ -25,3 +25,5 @@ wd/conf/eks/*/parameters.json
 Container-Root/hyperpod/deployment/eks/csi/efs/*.yaml
 Container-Root/hyperpod/deployment/eks/csi/efs/*.json
 Container-Root/hyperpod/deployment/eks/csi/efs/*.log
+!Container-Root/hyperpod/deployment/eks/csi/efs/pod.yaml
+!Container-Root/hyperpod/deployment/eks/csi/efs/pvc.yaml
