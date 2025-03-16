@@ -55,7 +55,7 @@ alias neuron-util='neurontop.sh'
 alias hp='hyperpod'
 alias nm='node-metadata.sh'
 alias nvr='node-versions.sh'
-alias nl-type='node-label-by-type.sh'
+alias nlf='node-label-family.sh'
 
 if [ -f ~/.kubeon ]; then
         source ~/kube-ps1.sh
