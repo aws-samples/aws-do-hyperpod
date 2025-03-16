@@ -21,4 +21,9 @@ Container-Root/eks/deployment/horizontal-pod-autoscaler/hpa-example/php-apache.y
 **/terraform.tfstate.backup
 **/tfplan
 Container-Root/version.txt
-
+wd/conf/eks/*/parameters.json
+Container-Root/hyperpod/deployment/eks/csi/efs/*.yaml
+Container-Root/hyperpod/deployment/eks/csi/efs/*.json
+Container-Root/hyperpod/deployment/eks/csi/efs/*.log
+!Container-Root/hyperpod/deployment/eks/csi/efs/pod.yaml
+!Container-Root/hyperpod/deployment/eks/csi/efs/pvc.yaml

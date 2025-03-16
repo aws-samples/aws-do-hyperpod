@@ -25,12 +25,12 @@ cat > hyperpod-config.json << EOL
           }
         ],
         "LifeCycleConfig": {
-          "SourceS3Uri": "s3://${BUCKET_NAME}",
+          "SourceS3Uri": "s3://${S3_BUCKET_NAME}",
           "OnCreate": "on_create.sh"
         },
         "ExecutionRole": "${EXECUTION_ROLE}",
         "ThreadsPerCore": 1,
-        "OnStartDeepHealthChecks": ${ONSTART_DEEP_HEALTHCHECKS}
+        "OnStartDeepHealthChecks": ${ONSTART_DEEP_HEALTHCHECKS1}
       },
       {
         "InstanceGroupName": "worker-group-2",
@@ -44,7 +44,7 @@ cat > hyperpod-config.json << EOL
           }
         ],
         "LifeCycleConfig": {
-          "SourceS3Uri": "s3://${BUCKET_NAME}",
+          "SourceS3Uri": "s3://${S3_BUCKET_NAME}",
           "OnCreate": "on_create.sh"
         },
         "ExecutionRole": "${EXECUTION_ROLE}",
@@ -62,12 +62,12 @@ cat > hyperpod-config.json << EOL
           }
         ],
         "LifeCycleConfig": {
-          "SourceS3Uri": "s3://${BUCKET_NAME}",
+          "SourceS3Uri": "s3://${S3_BUCKET_NAME}",
           "OnCreate": "on_create.sh"
         },
         "ExecutionRole": "${EXECUTION_ROLE}",
         "ThreadsPerCore": 1,
-        "OnStartDeepHealthChecks": ${ONSTART_DEEP_HEALTHCHECKS}
+        "OnStartDeepHealthChecks": ${ONSTART_DEEP_HEALTHCHECKS2}
       },
       {
         "InstanceGroupName": "worker-group-4",
@@ -81,17 +81,17 @@ cat > hyperpod-config.json << EOL
           }
         ],
         "LifeCycleConfig": {
-          "SourceS3Uri": "s3://${BUCKET_NAME}",
+          "SourceS3Uri": "s3://${S3_BUCKET_NAME}",
           "OnCreate": "on_create.sh"
         },
         "ExecutionRole": "${EXECUTION_ROLE}",
         "ThreadsPerCore": 1,
-        "OnStartDeepHealthChecks": ${ONSTART_DEEP_HEALTHCHECKS}
+        "OnStartDeepHealthChecks": ${ONSTART_DEEP_HEALTHCHECKS3}
       }
     ],
     "VpcConfig": {
-      "SecurityGroupIds": ["$SECURITY_GROUP"],
-      "Subnets":["$SUBNET_ID"]
+      "SecurityGroupIds": ["$SECURITY_GROUP_ID"],
+      "Subnets":["$PRIVATE_SUBNET_ID"]
     },
     "NodeRecovery": "${NODE_RECOVERY}"
 }

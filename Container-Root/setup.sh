@@ -13,7 +13,7 @@ fi
 
 # Install basic tools
 apt-get update -y && apt-get upgrade -y
-apt-get install -y curl jq vim nano less unzip git gettext-base groff sudo htop bash-completion wget bc gcc
+apt-get install -y curl jq vim nano less unzip git gettext-base groff sudo htop bash-completion wget bc gcc bsdmainutils
 
 # Install yq
 ./hyperpod/setup/install-yq.sh
@@ -39,6 +39,10 @@ apt-get install -y curl jq vim nano less unzip git gettext-base groff sudo htop 
 # Install python
 ./hyperpod/setup/install-python.sh
 python -m pip install torchx[kubernetes]
+
+# Install stern using krew
+./hyperpod/setup/eks/install-krew.sh
+./hyperpod/setup/eks/install-stern.sh
 
 # Install kubeps1 and configure bashrc aliases 
 ./hyperpod/setup/eks/install-kubeps1.sh

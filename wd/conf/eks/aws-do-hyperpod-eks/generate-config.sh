@@ -25,7 +25,7 @@ cat > hyperpod-config.json << EOL
           }
         ],
         "LifeCycleConfig": {
-          "SourceS3Uri": "s3://${BUCKET_NAME}",
+          "SourceS3Uri": "s3://${S3_BUCKET_NAME}",
           "OnCreate": "on_create.sh"
         },
         "ExecutionRole": "${EXECUTION_ROLE}",
@@ -44,7 +44,7 @@ cat > hyperpod-config.json << EOL
           }
         ],
         "LifeCycleConfig": {
-          "SourceS3Uri": "s3://${BUCKET_NAME}",
+          "SourceS3Uri": "s3://${S3_BUCKET_NAME}",
           "OnCreate": "on_create.sh"
         },
         "ExecutionRole": "${EXECUTION_ROLE}",
@@ -52,8 +52,8 @@ cat > hyperpod-config.json << EOL
       }
     ],
     "VpcConfig": {
-      "SecurityGroupIds": ["$SECURITY_GROUP"],
-      "Subnets":["$SUBNET_ID"]
+      "SecurityGroupIds": ["$SECURITY_GROUP_ID"],
+      "Subnets":["$PRIVATE_SUBNET_ID"]
     },
     "NodeRecovery": "${NODE_RECOVERY}"
 }

@@ -43,7 +43,7 @@ alias lnt='nodes-types-list.sh'
 alias ntl='nodes-types-list.sh'
 alias ke='pod-exec.sh'
 alias pe='pod-exec.sh'
-alias kl='pod-logs.sh'
+alias kl='kubectl stern'
 alias pl='pod-logs.sh'
 alias pln='pod-logs-ns.sh'
 alias cu='htop.sh'
@@ -63,7 +63,7 @@ fi
 
 export TERM=xterm-256color
 
-export PATH=$PATH:/root/go/bin:/hyperpod/ops/eks:.
+export PATH=$PATH:/root/go/bin:/hyperpod/ops/eks:/hyperpod/ops/slurm:/hyperpod/ops:/root/.krew/bin:.
 
 EOF
 

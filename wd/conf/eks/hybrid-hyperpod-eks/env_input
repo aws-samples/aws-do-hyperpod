@@ -1,29 +1,31 @@
 # Input environemnt variables
 
 ## HyperPod
-export RESOURCE_NAME_PREFIX=hybrid-hyperpod-eks
+export RESOURCE_NAME_PREFIX=hybrid-hyperpod-eks-gtc25
 export EKS_CLUSTER_NAME=${RESOURCE_NAME_PREFIX}-cluster
 export CREATE_EKS_CLUSTER=true
 export CREATE_SUBNET=false
 export HYPERPOD_NAME=${RESOURCE_NAME_PREFIX}-smhp
 export STACK_ID=${RESOURCE_NAME_PREFIX}-cfn
-export ACCEL_INSTANCE_TYPE1=ml.g5.8xlarge
+export ACCEL_INSTANCE_TYPE1=ml.g6e.8xlarge
 export ACCEL_COUNT1=2
 export ACCEL_VOLUME1_SIZE=500
-export ACCEL_INSTANCE_TYPE2=ml.p5.48xlarge
+export ACCEL_INSTANCE_TYPE2=ml.g6.2xlarge
 export ACCEL_COUNT2=2
 export ACCEL_VOLUME2_SIZE=500
-export ACCEL_INSTANCE_TYPE3=ml.trn1n.32xlarge
+export ACCEL_INSTANCE_TYPE3=ml.g5.8xlarge
 export ACCEL_COUNT3=2
 export ACCEL_VOLUME3_SIZE=500
-export GEN_INSTANCE_TYPE=ml.m5.2xlarge
-export GEN_COUNT=2
+export GEN_INSTANCE_TYPE=ml.c5.2xlarge
+export GEN_COUNT=4
 export GEN_VOLUME_SIZE=300
-export ONSTART_DEEP_HEALTHCHECKS="[\"InstanceStress\",\"InstanceConnectivity\"]"
+export ONSTART_DEEP_HEALTHCHECKS1="[\"InstanceStress\",\"InstanceConnectivity\"]"
+export ONSTART_DEEP_HEALTHCHECKS2="[\"InstanceStress\"]"
+export ONSTART_DEEP_HEALTHCHECKS3="[\"InstanceStress\",\"InstanceConnectivity\"]"
 export NODE_RECOVERY="Automatic"
 
 # VPC
-export AVAILABILITY_ZONE_ID=use2-az1
+export AVAILABILITY_ZONE_ID=use2-az2
 export VPC_CIDR=10.192.0.0/16
 export PUBLIC_SUBNET1_CIDR=10.192.10.0/24
 export PUBLIC_SUBNET2_CIDR=10.192.11.0/24
@@ -33,7 +35,7 @@ export PRIVATE_SUBNET1_CIDR=10.1.0.0/16
 #export PRIVATE_SUBNET3_CIDR=10.3.0.0/16
 
 # EKS
-export KUBERNETES_VERSION=1.29
+export KUBERNETES_VERSION=1.31
 export EKS_PRIVATE_SUBNET1_CIDR=10.192.7.0/28
 export EKS_PRIVATE_SUBNET2_CIDR=10.192.8.0/28
 export EKS_PRIVATE_SUBNET3_CIDR=10.192.9.0/28
