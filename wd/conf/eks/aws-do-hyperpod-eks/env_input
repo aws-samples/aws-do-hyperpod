@@ -3,7 +3,7 @@
 ## HyperPod
 export CREATE_EKS_CLUSTER=true
 export CREATE_SUBNET=false
-export RESOURCE_NAME_PREFIX=aws-do-hyperpod-eks-gtc25
+export RESOURCE_NAME_PREFIX=aws-do-hyperpod-eks
 export EKS_CLUSTER_NAME=${RESOURCE_NAME_PREFIX}-cluster
 export HYPERPOD_NAME=${RESOURCE_NAME_PREFIX}-smhp
 export STACK_ID=${RESOURCE_NAME_PREFIX}-cfn
