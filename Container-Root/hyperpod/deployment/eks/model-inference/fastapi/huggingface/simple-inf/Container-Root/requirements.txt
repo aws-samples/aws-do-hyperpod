@@ -1,0 +1,4 @@
+transformers
+configparser
+fastapi
+uvicorn
