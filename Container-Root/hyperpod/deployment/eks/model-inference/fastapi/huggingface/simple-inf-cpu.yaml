@@ -20,6 +20,9 @@ spec:
       - name: main
         image: pytorch/pytorch:2.6.0-cuda12.4-cudnn9-devel
         imagePullPolicy: Always
+        env:
+        - name: processor
+          value: cpu
         command:
         - /bin/sh
         - -c
@@ -34,9 +37,6 @@ spec:
           export HF_HOME=$model_save_path
           curl -L -o fastapi-server.py https://raw.githubusercontent.com/aws-samples/aws-do-hyperpod/refs/heads/main/Container-Root/hyperpod/deployment/eks/model-inference/fastapi/huggingface/simple-inf/Container-Root/fastapi-server.py
           uvicorn fastapi-server:app --host 0.0.0.0 --port 8080
-
-#        command: ["bash", "-c"]
-#        args: ["apt update", "apt install -y curl vim jq", "pip install transformers configparser fastapi uvicorn", "curl -L -o config.properties https://raw.githubusercontent.com/aws-samples/aws-do-hyperpod/refs/heads/main/Container-Root/hyperpod/deployment/eks/model-inference/fastapi/huggingface/simple-inf/Container-Root/config.properties", ". /config.properties", "mkdir -p $model_save_path", "export HF_HOME=$model_save_path", "curl -L -o fastapi-server.py https://raw.githubusercontent.com/aws-samples/aws-do-hyperpod/refs/heads/main/Container-Root/hyperpod/deployment/eks/model-inference/fastapi/huggingface/simple-inf/Container-Root/fastapi-server.py", "uvicorn fastapi-server:app --host 0.0.0.0 --port 8080"]
         ports:
         - name: pod-port
           containerPort: 8080
@@ -71,3 +71,38 @@ spec:
   type: ClusterIP
   selector:
     app: simple-inf-cpu
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: curl-inf-cpu
+  labels:
+    app: curl-inf-cpu
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: curl-inf-cpu
+  template:
+    metadata:
+      labels:
+        app: curl-inf-cpu
+    spec:
+      #nodeSelector:
+      #  beta.kubernetes.io/instance-type: "c5.2xlarge"
+      containers:
+      - name: curl
+        image: iankoulski/do-curl:latest
+        imagePullPolicy: Always
+        command:
+        - /bin/bash
+        - -c
+        - |
+          #!/bin/bash
+          while true; do 
+              echo ""
+              curl http://simple-inf-cpu:8080/
+              curl http://simple-inf-cpu:8080/predictions/model0
+              sleep 5000
+          done
+
