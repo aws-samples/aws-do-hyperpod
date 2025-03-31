@@ -15,10 +15,13 @@ if [ "$TO" == "docker" ]; then
 		docker exec -it ${IMAGE} sh -c "for t in \$(ls /test*.sh); do echo Running test \$t; \$t; done;"
 	fi
 elif [ "$TO" == "kubernetes" ]; then
-	kubectl exec -it ${IMAGE} -- sh -c "for t in \$(ls /test*.sh); do echo Running test \$t; \$t; done;"
+	CONTAINER_INDEX=$1
+        if [ "$CONTAINER_INDEX" == "" ]; then
+        	CONTAINER_INDEX=1
+        fi
+	CMD="unset DEBUG; ${KUBECTL} -n ${NAMESPACE} exec -it $( ${KUBECTL} -n ${NAMESPACE} get pod | grep ${APP_NAME} | head -n ${CONTAINER_INDEX} | cut -d ' ' -f 1 ) -- sh -c 'for t in \$(ls /test*.sh); do echo Running test \$t; \$t; done;'"
+	if [ ! "$verbose" == "false" ]; then echo -e "${CMD}"; eval "${CMD}"; fi 
 else
 	echo "Running test for orchestrator $TO is not implemented"
 fi
-
-
 

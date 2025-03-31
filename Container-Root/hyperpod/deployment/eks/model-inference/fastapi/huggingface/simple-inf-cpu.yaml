@@ -1,18 +1,18 @@
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: simple-inf
+  name: simple-inf-cpu
   labels:
-    app: simple-inf
+    app: simple-inf-cpu
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: simple-inf
+      app: simple-inf-cpu
   template:
     metadata:
       labels:
-        app: simple-inf
+        app: simple-inf-cpu
     spec:
       #nodeSelector:
       #  beta.kubernetes.io/instance-type: "c5.2xlarge"
@@ -20,8 +20,23 @@ spec:
       - name: main
         image: pytorch/pytorch:2.6.0-cuda12.4-cudnn9-devel
         imagePullPolicy: Always
-        command: ["bash", "-c"]
-        args: ["apt update", "apt install -y curl vim jq", "pip install transformers configparser fastapi uvicorn", "curl -L -o config.properties https://.....", ". /config.properties", "mkdir -p $model_save_path", "export HF_HOME=$model_save_path", "curl -L -o fastapi-server.py http://....", "uvicorn fastapi-server:app --host 0.0.0.0 --port 8080"]
+        command:
+        - /bin/sh
+        - -c
+        - |
+          #!/bin/bash          
+          apt update
+          apt install -y curl vim jq
+          pip install transformers configparser fastapi uvicorn
+          curl -L -o config.properties https://raw.githubusercontent.com/aws-samples/aws-do-hyperpod/refs/heads/main/Container-Root/hyperpod/deployment/eks/model-inference/fastapi/huggingface/simple-inf/Container-Root/config.properties
+          . ./config.properties
+          mkdir -p $model_save_path
+          export HF_HOME=$model_save_path
+          curl -L -o fastapi-server.py https://raw.githubusercontent.com/aws-samples/aws-do-hyperpod/refs/heads/main/Container-Root/hyperpod/deployment/eks/model-inference/fastapi/huggingface/simple-inf/Container-Root/fastapi-server.py
+          uvicorn fastapi-server:app --host 0.0.0.0 --port 8080
+
+#        command: ["bash", "-c"]
+#        args: ["apt update", "apt install -y curl vim jq", "pip install transformers configparser fastapi uvicorn", "curl -L -o config.properties https://raw.githubusercontent.com/aws-samples/aws-do-hyperpod/refs/heads/main/Container-Root/hyperpod/deployment/eks/model-inference/fastapi/huggingface/simple-inf/Container-Root/config.properties", ". /config.properties", "mkdir -p $model_save_path", "export HF_HOME=$model_save_path", "curl -L -o fastapi-server.py https://raw.githubusercontent.com/aws-samples/aws-do-hyperpod/refs/heads/main/Container-Root/hyperpod/deployment/eks/model-inference/fastapi/huggingface/simple-inf/Container-Root/fastapi-server.py", "uvicorn fastapi-server:app --host 0.0.0.0 --port 8080"]
         ports:
         - name: pod-port
           containerPort: 8080
@@ -45,10 +60,9 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
-  name: simple-inf
-  namespace: simple-inf
+  name: simple-inf-cpu
   labels:
-    app: simple-inf
+    app: simple-inf-cpu
 spec:
   ports:
   - name: svc-port
@@ -56,4 +70,4 @@ spec:
     targetPort: pod-port
   type: ClusterIP
   selector:
-    app: simple-inf
+    app: simple-inf-cpu

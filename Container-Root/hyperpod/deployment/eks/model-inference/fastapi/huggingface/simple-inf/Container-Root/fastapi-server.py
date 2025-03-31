@@ -76,9 +76,10 @@ except ImportError:
 if device_type in ['inf1', 'inf2']:
     pass
 elif torch.cuda.is_available():
-    device_type="gpu"
-    device = torch.device("cuda")
-    logger.warning(torch.cuda.get_device_name(0))
+    if processor == 'gpu':
+        device_type="gpu"
+        device = torch.device("cuda")
+        logger.warning(torch.cuda.get_device_name(0))
 else:
     machine=platform.uname().machine
     device_type="cpu"
