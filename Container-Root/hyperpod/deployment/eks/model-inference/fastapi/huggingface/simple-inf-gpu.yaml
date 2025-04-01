@@ -1,28 +1,28 @@
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: simple-inf-cpu
+  name: simple-inf-gpu
   labels:
-    app: simple-inf-cpu
+    app: simple-inf-gpu
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: simple-inf-cpu
+      app: simple-inf-gpu
   template:
     metadata:
       labels:
-        app: simple-inf-cpu
+        app: simple-inf-gpu
     spec:
       #nodeSelector:
-      #  node.kubernetes.io/instance-type: "c5.2xlarge"
+      #  node.kubernetes.io/instance-type: "g5.2xlarge"
       containers:
       - name: main
         image: pytorch/pytorch:2.6.0-cuda12.4-cudnn9-devel
         imagePullPolicy: Always
         env:
         - name: processor
-          value: cpu
+          value: gpu
         command:
         - /bin/sh
         - -c
@@ -32,6 +32,7 @@ spec:
           apt install -y curl vim jq
           pip install transformers configparser fastapi uvicorn
           curl -L -o config.properties https://raw.githubusercontent.com/aws-samples/aws-do-hyperpod/refs/heads/main/Container-Root/hyperpod/deployment/eks/model-inference/fastapi/huggingface/simple-inf/Container-Root/config.properties
+          sed -i -e "s/processor=cpu/processor=gpu/g" ./config.properties
           . ./config.properties
           mkdir -p $model_save_path
           export HF_HOME=$model_save_path
@@ -42,13 +43,14 @@ spec:
           containerPort: 8080
         resources:
           limits:
-            cpu: 4
+            cpu: 1
             memory: 4Gi
-        #    nvidia.com/gpu: 1
+            nvidia.com/gpu: 1
         #    k8s.amazonaws.com/vgpu: 5
           requests:
             cpu: "1"
             memory: 1Gi
+            nvidia.com/gpu: 1
         #volumeMounts:
         #- name: nvidia-mps
         #  mountPath: /tmp/nvidia-mps
@@ -60,9 +62,9 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
-  name: simple-inf-cpu
+  name: simple-inf-gpu
   labels:
-    app: simple-inf-cpu
+    app: simple-inf-gpu
 spec:
   ports:
   - name: svc-port
@@ -70,23 +72,23 @@ spec:
     targetPort: pod-port
   type: ClusterIP
   selector:
-    app: simple-inf-cpu
+    app: simple-inf-gpu
 ---
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: curl-inf-cpu
+  name: curl-inf-gpu
   labels:
-    app: curl-inf-cpu
+    app: curl-inf-gpu
 spec:
-  replicas: 1
+  replicas: 5
   selector:
     matchLabels:
-      app: curl-inf-cpu
+      app: curl-inf-gpu
   template:
     metadata:
       labels:
-        app: curl-inf-cpu
+        app: curl-inf-gpu
     spec:
       #nodeSelector:
       #  beta.kubernetes.io/instance-type: "c5.2xlarge"
@@ -101,9 +103,9 @@ spec:
           #!/bin/bash
           while true; do 
               echo ""
-              curl http://simple-inf-cpu:8080
+              curl http://simple-inf-gpu:8080
               echo ""
-              curl http://simple-inf-cpu:8080/predictions/model0
-              sleep 1
+              curl http://simple-inf-gpu:8080/predictions/model0
+              sleep 0.1
           done
 
