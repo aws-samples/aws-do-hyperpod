@@ -15,7 +15,7 @@ spec:
         app: simple-inf-gpu
     spec:
       #nodeSelector:
-      #  node.kubernetes.io/instance-type: "g5.2xlarge"
+      #  node.kubernetes.io/instance-type: "ml.g5.8xlarge"
       containers:
       - name: main
         image: pytorch/pytorch:2.6.0-cuda12.4-cudnn9-devel
@@ -43,21 +43,13 @@ spec:
           containerPort: 8080
         resources:
           limits:
-            cpu: 1
-            memory: 4Gi
+          #  cpu: 1
+          #  memory: 4Gi
             nvidia.com/gpu: 1
-        #    k8s.amazonaws.com/vgpu: 5
           requests:
-            cpu: "1"
-            memory: 1Gi
+          #  cpu: 1
+          #  memory: 1Gi
             nvidia.com/gpu: 1
-        #volumeMounts:
-        #- name: nvidia-mps
-        #  mountPath: /tmp/nvidia-mps
-      #volumes:
-      #- name: nvidia-mps
-      #  hostPath:
-      #    path: /tmp/nvidia-mps
 ---
 kind: Service
 apiVersion: v1
@@ -91,7 +83,7 @@ spec:
         app: curl-inf-gpu
     spec:
       #nodeSelector:
-      #  beta.kubernetes.io/instance-type: "c5.2xlarge"
+      #  beta.kubernetes.io/instance-type: "ml.m5.2xlarge"
       containers:
       - name: curl
         image: iankoulski/do-curl:latest

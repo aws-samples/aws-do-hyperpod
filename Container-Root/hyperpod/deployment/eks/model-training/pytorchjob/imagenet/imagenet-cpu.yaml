@@ -28,8 +28,8 @@ spec:
       labels:
         app: etcd-cpu
     spec:
-      nodeSelector:
-        node.kubernetes.io/instance-type: ml.m5.2xlarge
+      #nodeSelector:
+      #  node.kubernetes.io/instance-type: ml.m5.2xlarge
       containers:
         - name: etcd
           command: ["/usr/local/bin/etcd"]
@@ -82,8 +82,8 @@ spec:
       restartPolicy: OnFailure
       template:
         spec:
-          nodeSelector:
-            node.kubernetes.io/instance-type: ml.m5.2xlarge
+          #nodeSelector:
+          #  node.kubernetes.io/instance-type: ml.m5.2xlarge
           containers:
             - name: pytorch
               image: kubeflow/pytorch-elastic-example-imagenet:latest

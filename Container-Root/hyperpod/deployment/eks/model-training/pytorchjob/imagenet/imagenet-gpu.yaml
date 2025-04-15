@@ -28,8 +28,8 @@ spec:
       labels:
         app: etcd-gpu
     spec:
-      nodeSelector:
-        node.kubernetes.io/instance-type: ml.g5.8xlarge
+      #nodeSelector:
+      #  node.kubernetes.io/instance-type: ml.m5.2xlarge
       containers:
         - name: etcd
           command: ["/usr/local/bin/etcd"]
@@ -86,8 +86,8 @@ spec:
           labels:
             app: imagenet
         spec:
-          nodeSelector:
-            node.kubernetes.io/instance-type: "ml.g5.8xlarge"
+          #nodeSelector:
+          #  node.kubernetes.io/instance-type: "ml.g5.8xlarge"
           affinity:
             podAffinity:
               requiredDuringSchedulingIgnoredDuringExecution:
