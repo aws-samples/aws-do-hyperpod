@@ -67,7 +67,7 @@ spec:
     rdzvHost: etcd-cpu
     rdzvPort: 2379
     minReplicas: 2
-    maxReplicas: 24
+    maxReplicas: 2
     maxRestarts: 200
     metrics:
       - type: Resource
