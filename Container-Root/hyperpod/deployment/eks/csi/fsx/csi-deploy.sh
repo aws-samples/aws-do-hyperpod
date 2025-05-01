@@ -66,7 +66,7 @@ mountOptions:
   - flock
 EOF
 
-	CMD="kubectl apply -f ./starageclass.yaml"
+	CMD="kubectl apply -f ./storageclass.yaml"
 	if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
 	eval "${CMD}"
 
