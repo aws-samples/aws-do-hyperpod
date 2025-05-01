@@ -1,8 +1,15 @@
 # FSxL Container Storage Interface
 
-Run `csi-deploy.sh` first to deploy the csi driver, then create a FSxL volume with EFA enabled by running the `./fsx-create.sh` script.
-Follow the workshop instructions for using FSxL (see reference below) with a static volume to enable volume mounts into your pods.
+Run `csi-deploy.sh` first to deploy the CSI driver. This creates the fsx-sc storage class.
+You can create dynamic FSxL following the [pvc-dynamic.yaml](pvc-dynamic.yaml) example. Alternatively, you can create an FSxL volume, using the fsx-create.sh script, then create a Kubernetes persistent volume, using the [./pv-create.sh](pv-create.sh), providing the file system id as argument. You can create a static persistent volume claim, following the [pvc-static.yaml](pvc-static.yaml) example.
+Follow the [SageMaker HyperPod EKS workshop](https://bit.ly/smhp-eks-workshop) instructions for step-by-step guidance if needed.
 
+
+Once a Bound FSx PVC is available, you can create a test pod that mounts the FSx volume by running:
+
+```sh
+kubectl apply -f ./pod.yaml
+```
 
 # References
 

@@ -26,13 +26,13 @@ eval "${CMD}"
 
 echo ""
 echo "Creating IAM service account fsx-csi-controller-sa..."
-CMD="eksctl create iamserviceaccount --name fsx-csi-controller-sa --override-existing-serviceaccounts --namespace kube-system --cluster $EKS_CLUSTER_NAME --attach-policy-arn arn:aws:iam::aws:policy/AmazonFSxFullAccess --approve --role-name AmazonEKSFSxLustreCSIDriverFullAccess --region $AWS_REGION"
+CMD="eksctl create iamserviceaccount --name fsx-csi-controller-sa --override-existing-serviceaccounts --namespace kube-system --cluster $EKS_CLUSTER_NAME --attach-policy-arn arn:aws:iam::aws:policy/AmazonFSxFullAccess --approve --role-name FSXCSI-${EKS_CLUSTER_NAME} --region $AWS_REGION"
 if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
 eval "${CMD}"
 
 echo ""
 echo "Annotating service account with IAM role ARN ..."
-SA_ROLE_ARN=$(aws iam get-role --role-name AmazonEKSFSxLustreCSIDriverFullAccess --query 'Role.Arn' --output text)
+SA_ROLE_ARN=$(aws iam get-role --role-name FSXCSI-${EKS_CLUSTER_NAME} --query 'Role.Arn' --output text)
 CMD="kubectl annotate serviceaccount -n kube-system fsx-csi-controller-sa  eks.amazonaws.com/role-arn=${SA_ROLE_ARN} --overwrite=true"
 if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
 eval "${CMD}"

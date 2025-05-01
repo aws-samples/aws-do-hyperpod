@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# Config
-export STORAGE_CAPACITY=43200
+source .env
 
 if [ ! "$SUBNET_ID" == "" ]; then
 	if [ ! "$SECURITY_GROUP_ID" == "" ]; then
