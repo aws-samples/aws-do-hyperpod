@@ -5,7 +5,7 @@ metadata:
 spec:
   containers:
   - name: app
-    image: centos
+    image: ubuntu
     command: ["/bin/sh"]
     args: ["-c", "while true; do echo \"FSx volume is accessible on\" $(date) >> /fsx/health.log; sleep 5; done"]
     volumeMounts:
