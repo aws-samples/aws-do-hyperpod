@@ -1,0 +1,85 @@
+# Hello Web App
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: letsencrypt
+  labels:
+    app: letsencrypt
+spec:
+  selector:
+    matchLabels:
+      app: letsencrypt
+      tier: web
+  template:
+    metadata:
+      labels:
+        app: letsencrypt
+        tier: web
+    spec:
+      containers:
+      - name: letsencrypt
+        image: us-docker.pkg.dev/google-samples/containers/gke/hello-app-tls:1.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8443
+        volumeMounts:
+          - name: tls
+            mountPath: /etc/tls
+            readOnly: true
+        env:
+          - name: TLS_CERT
+            value: /etc/tls/tls.crt
+          - name: TLS_KEY
+            value: /etc/tls/tls.key
+      volumes:
+      - name: tls
+        secret:
+          secretName: ${SECRET_NAME}
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+    name: letsencrypt
+spec:
+    ports:
+    - port: 443
+      protocol: TCP
+      targetPort: 8443
+    selector:
+        app: letsencrypt
+        tier: web
+    type: NodePort
+---
+# Test
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: letsencrypt-curl
+  labels:
+    app: letsencrypt-curl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: letsencrypt-curl
+  template:
+    metadata:
+      labels:
+        app: letsencrypt-curl
+    spec:
+      containers:
+      - name: curl
+        image: iankoulski/do-curl:latest
+        imagePullPolicy: Always
+        command:
+        - /bin/bash
+        - -c
+        - |
+          #!/bin/bash
+          while true; do 
+              echo ""
+              curl -v --insecure https://letsencrypt
+              sleep 5
+          done
+

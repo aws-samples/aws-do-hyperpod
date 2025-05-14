@@ -1,0 +1,20 @@
+# Certificate Template
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ${CERTIFICATE_NAME}
+spec:
+  secretName: ${CERTIFICATE_NAME}-tls
+  revisionHistoryLimit: 1
+  privateKey:
+    rotationPolicy: Always
+  commonName: ${FQDN}
+  dnsNames:
+    - ${FQDN}
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth
+  issuerRef:
+    name: selfsigned
+    kind: ClusterIssuer
