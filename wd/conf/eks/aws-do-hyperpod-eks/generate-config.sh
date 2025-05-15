@@ -3,6 +3,7 @@
 source ./env_input
 source ./env_vars
 
+# Start writing the JSON
 cat > hyperpod-config.json << EOL
 {
     "ClusterName": "${HYPERPOD_NAME}",
@@ -29,8 +30,16 @@ cat > hyperpod-config.json << EOL
           "OnCreate": "on_create.sh"
         },
         "ExecutionRole": "${EXECUTION_ROLE}",
-        "ThreadsPerCore": 1,
-        "OnStartDeepHealthChecks": ${ONSTART_DEEP_HEALTHCHECKS}
+        "ThreadsPerCore": 1
+EOL
+
+# Conditionally add OnStartDeepHealthChecks only if not empty
+if [ -n "${ONSTART_DEEP_HEALTHCHECKS}" ]; then
+  echo '        ,"OnStartDeepHealthChecks": '${ONSTART_DEEP_HEALTHCHECKS} >> hyperpod-config.json
+fi
+
+# Finish writing the JSON
+cat >> hyperpod-config.json << EOL
       },
       {
         "InstanceGroupName": "worker-group-2",
