@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "d2048"
+spec:
+  selector:
+    matchLabels:
+      app: "2048"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: "2048"
+    spec:
+      containers:
+        - image: alexwhen/docker-2048
+          imagePullPolicy: Always
+          name: "2048"
+          ports:
+            - containerPort: 80
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: s2048
+  labels:
+    app: "2048"
+spec:
+  type: NodePort
+  ports:
+    - port: 80
+  selector:
+    app: "2048"
+---
+  apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    name: i2048
+  spec:
+    ingressClassName: nginx
+    rules:
+      #      - host: *
+      - http:
+          paths:
+            - pathType: Prefix
+              backend:
+                service:
+                  name: s2048
+                  port:
+                    number: 80
+              path: /
+

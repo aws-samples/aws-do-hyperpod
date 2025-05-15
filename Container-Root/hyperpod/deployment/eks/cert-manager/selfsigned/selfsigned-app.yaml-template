@@ -1,0 +1,85 @@
+# Hello Web App
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: selfsigned
+  labels:
+    app: selfsigned
+spec:
+  selector:
+    matchLabels:
+      app: selfsigned
+      tier: web
+  template:
+    metadata:
+      labels:
+        app: selfsigned
+        tier: web
+    spec:
+      containers:
+      - name: selfsigned
+        image: us-docker.pkg.dev/google-samples/containers/gke/hello-app-tls:1.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8443
+        volumeMounts:
+          - name: tls
+            mountPath: /etc/tls
+            readOnly: true
+        env:
+          - name: TLS_CERT
+            value: /etc/tls/tls.crt
+          - name: TLS_KEY
+            value: /etc/tls/tls.key
+      volumes:
+      - name: tls
+        secret:
+          secretName: ${SECRET_NAME}
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+    name: selfsigned
+spec:
+    ports:
+    - port: 443
+      protocol: TCP
+      targetPort: 8443
+    selector:
+        app: selfsigned
+        tier: web
+    type: NodePort
+---
+# Test
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: selfsigned-curl
+  labels:
+    app: selfsigned-curl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: selfsigned-curl
+  template:
+    metadata:
+      labels:
+        app: selfsigned-curl
+    spec:
+      containers:
+      - name: curl
+        image: iankoulski/do-curl:latest
+        imagePullPolicy: Always
+        command:
+        - /bin/bash
+        - -c
+        - |
+          #!/bin/bash
+          while true; do 
+              echo ""
+              curl --insecure -v https://selfsigned
+              sleep 5
+          done
+
