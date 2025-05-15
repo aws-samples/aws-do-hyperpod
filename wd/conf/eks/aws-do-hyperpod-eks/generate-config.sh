@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# Show debug info about the environment files
+echo "==== The content of env_input ===="
+cat ./env_input
+echo "==============================================="
+
+echo "==== The content of env_vars ===="
+cat ./env_vars
+echo "==============================================="
+
 source ./env_input
 source ./env_vars
 
@@ -67,3 +76,20 @@ cat >> hyperpod-config.json << EOL
     "NodeRecovery": "${NODE_RECOVERY}"
 }
 EOL
+
+# Display the generated JSON file
+echo "==== Generated hyperpod-config.json ===="
+cat hyperpod-config.json
+echo "=================================================="
+
+# Validate the JSON if jq is available
+if command -v jq &> /dev/null; then
+    echo "==== Validate output JSON ===="
+    if jq empty hyperpod-config.json 2>/dev/null; then
+        echo "JSON is valid"
+    else
+        echo "ERROR: Invalid JSON"
+        jq empty hyperpod-config.json
+    fi
+    echo "=================================="
+fi
