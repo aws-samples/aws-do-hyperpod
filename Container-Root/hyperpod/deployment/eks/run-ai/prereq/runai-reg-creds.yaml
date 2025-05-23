@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: runai-reg-creds
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: <base64_encoded_dockerconfig_json>

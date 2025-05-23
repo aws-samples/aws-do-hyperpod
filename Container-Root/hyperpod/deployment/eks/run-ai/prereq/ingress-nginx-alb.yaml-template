@@ -1,0 +1,32 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-nginx-alb
+  namespace: ingress-nginx
+  annotations:
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'  # Listen on both HTTP and HTTPS
+    #alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS": 443}]'  # Listen only on HTTPS
+    alb.ingress.kubernetes.io/ssl-redirect: "443"  # Redirect HTTP to HTTPS
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTPS
+    alb.ingress.kubernetes.io/healthcheck-path: /healthz
+    alb.ingress.kubernetes.io/backend-protocol: HTTPS
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    # You can either use secretName or certificate-arn
+    # alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:YOUR_REGION:ACCOUNT_ID:certificate/YOUR_CERTIFICATE_ID
+spec:
+  ingressClassName: alb # Use ALB Ingress Controller
+  tls:
+    - hosts:
+        - "${DNS_NAME}"
+      secretName: nginx-tls  # Secret containing your TLS certificate
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ingress-nginx-controller
+                port:
+                  number: 443

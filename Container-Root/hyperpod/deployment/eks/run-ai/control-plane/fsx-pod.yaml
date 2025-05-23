@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: fsx-pod
+spec:
+  containers:
+  - name: app
+    image: ubuntu
+    command: ["/bin/sh"]
+    args: ["-c", "while true; do echo \"FSx volume is accessible on\" $(date) >> /fsx/health.log; sleep 5; done"]
+    volumeMounts:
+    - name: fsx-postgres
+      mountPath: /fsx-postgres
+    - name: fsx-redis
+      mountPath: /fsx-redis
+    - name: fsx-thanos
+      mountPath: /fsx-thanos
+  volumes:
+  - name: fsx-postgres
+    persistentVolumeClaim:
+      claimName: data-runai-backend-postgresql-0
+  - name: fsx-redis
+    persistentVolumeClaim:
+      claimName: data-runai-backend-redis-queue-master-0
+  - name: fsx-thanos
+    persistentVolumeClaim:
+      claimName: data-runai-backend-thanos-receive-0
