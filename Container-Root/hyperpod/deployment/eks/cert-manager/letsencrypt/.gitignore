@@ -1,2 +1,5 @@
 clusterissuer.yaml
-letsencrypt.yaml
+letsencrypt-app.yaml
+certificate.yaml
+*.crt
+*.key

@@ -1,8 +1,6 @@
 #!/bin/bash
 
-pushd ../../..
-EKS_CLUSTER_NAME=$(./hyperpod-describe.sh | tail -n +6 | jq -r .Orchestrator.Eks.ClusterArn | cut -d '/' -f 2)
-popd
+EKS_CLUSTER_NAME=$(kubectl config current-context | cut -d '/' -f 2)
 
 CMD="aws eks create-addon --addon-name amazon-cloudwatch-observability --cluster-name $EKS_CLUSTER_NAME"
 

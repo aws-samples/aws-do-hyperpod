@@ -18,11 +18,15 @@ else
 	if [ ! "$verbose" == "false" ]; then echo -e "\n${CMD}\n"; fi
 	export SECRET_NAME=$(eval "$CMD")
 
-	CMD="kubectl get secret ${SECRET_NAME} -o json -o=jsonpath='{.data.tls\.crt}' | base64 -d | tee ${CERTIFICATE_NAME}.crt"
+	CMD="kubectl get secret ${SECRET_NAME} -o json -o=jsonpath='{.data.tls\.crt}' | base64 -d | tee ${CERTIFICATE_NAME}-chain.crt"
 	if [ ! "$verbose" == "false" ]; then echo -e "\n${CMD}\n"; fi
         eval "$CMD"
 
 	CMD="kubectl get secret ${SECRET_NAME} -o json -o=jsonpath='{.data.tls\.key}' | base64 -d | tee ${CERTIFICATE_NAME}.key"
+	if [ ! "$verbose" == "false" ]; then echo -e "\n${CMD}\n"; fi
+        eval "$CMD"
+
+	CMD="cat ${CERTIFICATE_NAME}-chain.crt | sed '/BEGIN/,/END/!d;/END/q' | tee ${CERTIFICATE_NAME}.crt"
 	if [ ! "$verbose" == "false" ]; then echo -e "\n${CMD}\n"; fi
         eval "$CMD"
 fi

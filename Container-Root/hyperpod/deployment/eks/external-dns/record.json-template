@@ -1,0 +1,18 @@
+{
+        "Comment": "$ACTION by aws-do-hyperpod",
+        "Changes": [
+            {
+                "Action": "${ACTION}",
+                "ResourceRecordSet": {
+                    "Name": "${FQDN}",
+                    "Type": "${TYPE}",
+                    "TTL": 60,
+                    "ResourceRecords": [
+                        {
+                            "Value": "${VALUE}"
+                        }
+                    ]
+                }
+            }
+        ]
+}

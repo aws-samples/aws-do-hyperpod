@@ -1,3 +1,4 @@
 certificate.yaml
 selfsigned-app.yaml
-
+*.crt
+*.key
