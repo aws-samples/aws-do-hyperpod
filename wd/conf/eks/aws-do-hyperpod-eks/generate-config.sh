@@ -1,8 +1,18 @@
 #!/bin/bash
 
+# Show debug info about the environment files
+echo "==== The content of env_input ===="
+cat ./env_input
+echo "==============================================="
+
+echo "==== The content of env_vars ===="
+cat ./env_vars
+echo "==============================================="
+
 source ./env_input
 source ./env_vars
 
+# Start writing the JSON
 cat > hyperpod-config.json << EOL
 {
     "ClusterName": "${HYPERPOD_NAME}",
@@ -29,8 +39,16 @@ cat > hyperpod-config.json << EOL
           "OnCreate": "on_create.sh"
         },
         "ExecutionRole": "${EXECUTION_ROLE}",
-        "ThreadsPerCore": 1,
-        "OnStartDeepHealthChecks": ${ONSTART_DEEP_HEALTHCHECKS}
+        "ThreadsPerCore": 1
+EOL
+
+# Conditionally add OnStartDeepHealthChecks only if not empty
+if [ -n "${ONSTART_DEEP_HEALTHCHECKS}" ]; then
+  echo '        ,"OnStartDeepHealthChecks": '${ONSTART_DEEP_HEALTHCHECKS} >> hyperpod-config.json
+fi
+
+# Finish writing the JSON
+cat >> hyperpod-config.json << EOL
       },
       {
         "InstanceGroupName": "worker-group-2",
@@ -58,3 +76,20 @@ cat > hyperpod-config.json << EOL
     "NodeRecovery": "${NODE_RECOVERY}"
 }
 EOL
+
+# Display the generated JSON file
+echo "==== Generated hyperpod-config.json ===="
+cat hyperpod-config.json
+echo "=================================================="
+
+# Validate the JSON if jq is available
+if command -v jq &> /dev/null; then
+    echo "==== Validate output JSON ===="
+    if jq empty hyperpod-config.json 2>/dev/null; then
+        echo "JSON is valid"
+    else
+        echo "ERROR: Invalid JSON"
+        jq empty hyperpod-config.json
+    fi
+    echo "=================================="
+fi
