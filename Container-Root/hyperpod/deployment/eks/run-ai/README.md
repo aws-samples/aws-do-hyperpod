@@ -353,6 +353,10 @@ Three files will be created in the current directory:
 * ${CERTIFICATE_NAME}.crt         - certificate
 * ${CERTIFICATE_NAME}.key         - private key
 
+###### 4.3.2.3.1. A note about certificate renewal
+
+Letsencrypt certificates are valid for 90 days. Cert Manager renews the certificate automatically before they expire, however the certificate does not automatically export from certmanager and apply to the runai installation. If the certificate in your runai installation is expired, you will not be able to load the runai UI. If you are using a letsencrypt certificate, repeat steps 4.3.2.3, 4.3.2.4, and 4.3.3. to renew the certificate in your runai deployment.
+
 ##### 4.3.2.4. Save certificate outside of container
 
 By default the `aws-do-hyperpod` container has the folder where it was started from, mounted as `/aws-do-hyperpod`. To ensure that we do not lose the certificate files if the container restarts, please execute the following commans to save these certificate files outside of the container.
