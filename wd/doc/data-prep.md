@@ -36,7 +36,7 @@ spec:
       restartPolicy: Never
 EOF
 
-kubectl apply -f tarring.yaml
+kubectl apply -f ./tarring.yaml
 ```
 
    This creates a Kubernetes job that will extract the required data files.
@@ -69,6 +69,9 @@ spec:
   - name: fsx-pv
     persistentVolumeClaim:
       claimName: fsx-claim
+EOF
+
+kubectl apply -f ./view-fsx.yaml
 ```
 
    This creates a pod to view the FSx contents
