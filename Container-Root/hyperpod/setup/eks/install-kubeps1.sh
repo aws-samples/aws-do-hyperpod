@@ -56,6 +56,8 @@ alias hp='hyperpod'
 alias nm='node-metadata.sh'
 alias nvr='node-versions.sh'
 alias nlf='node-label-family.sh'
+alias eu='efatop.sh'
+alias efa-util='efatop.sh'
 
 if [ -f ~/.kubeon ]; then
         source ~/kube-ps1.sh
