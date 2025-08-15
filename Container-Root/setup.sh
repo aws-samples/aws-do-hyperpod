@@ -72,6 +72,9 @@ if [ ! "$MOD" == "compact" ]; then
 	# Install cmctl
 	./hyperpod/setup/eks/install-cmctl.sh
 
+	* Install ktop
+	./hyperpod/setup/eks/install-ktop.sh
+
 	apt clean
 
 	pip cache purge
