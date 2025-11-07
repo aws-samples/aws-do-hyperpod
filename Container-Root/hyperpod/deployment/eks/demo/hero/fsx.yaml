@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: fsx-cleanup-pod
+spec:
+  volumes:
+    - name: fsx-storage
+      persistentVolumeClaim:
+        claimName: fsx-claim
+  containers:
+    - name: cleanup-container
+      image: ubuntu:latest
+      command: ["/bin/bash"]
+      args: ["-c", "sleep infinity"]  # Keeps the container running so you can exec into it
+      volumeMounts:
+        - name: fsx-storage
+          mountPath: /fsx
+  restartPolicy: Never
+

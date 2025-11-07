@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inflate
+  namespace: hyperpod-ns-inference-team
+  labels:
+    kueue.x-k8s.io/queue-name: hyperpod-ns-inference-team-localqueue
+    kueue.x-k8s.io/priority-class: inference-priority
+spec:
+  selector:
+    matchLabels:
+      app: inflate
+  template:
+    metadata:
+      labels:
+        app: inflate
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 3000
+        fsGroup: 2000
+      containers:
+      - image: public.ecr.aws/eks-distro/kubernetes/pause:3.2
+        name: inflate
+        resources:
+          requests:
+            nvidia.com/gpu: 1
+          limits:
+            nvidia.com/gpu: 1
+        securityContext:
+          allowPrivilegeEscalation: false

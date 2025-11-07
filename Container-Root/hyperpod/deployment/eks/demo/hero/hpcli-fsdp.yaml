@@ -1,0 +1,77 @@
+defaults:
+ - override hydra/job_logging: stdout
+
+hydra:
+ run:
+  dir: .
+ output_subdir: null
+
+training_cfg:
+ entry_script: /fsdp/train.py
+ script_args:
+    - --max_context_width: 4096
+    - --num_key_value_heads: 32
+    - --intermediate_size: 11008
+    - --hidden_width: 4096
+    - --num_layers: 32
+    - --num_heads: 32
+    - --model_type: llama_v2
+    - --tokenizer: hf-internal-testing/llama-tokenizer
+    - --checkpoint_freq: 5000
+    - --validation_freq: 500
+    - --max_steps: 5000
+    - --checkpoint_dir: /checkpoints
+    - --dataset: allenai/c4
+    - --dataset_config_name: en
+    - --resume_from_checkpoint: /checkpoints
+    - --train_batch_size: 1
+    - --val_batch_size: 1
+    - --sharding_strategy: full
+    - --offload_activation: 1
+
+ run:
+  name: fsdp
+  nodes: 
+  ntasks_per_node: 1
+cluster:
+ cluster_type: k8s
+ instance_type: 
+ cluster_config:
+  service_account_name: null
+
+  volumes:
+    - volumeName: local
+      hostPath: "/mnt/k8s-disks/0"
+      mountPath: "/local"
+
+  namespace: kubeflow
+  label_selector:
+      required:
+          sagemaker.amazonaws.com/node-health-status:
+              - Schedulable
+      preferred:
+          sagemaker.amazonaws.com/deep-health-check-status:
+              - Passed
+      weights:
+          - 100
+  pullPolicy: Always
+  restartPolicy: OnFailure
+
+  annotations:
+    sagemaker.amazonaws.com/enable-job-auto-resume: True
+    sagemaker.amazonaws.com/job-max-retry-count: 10
+
+base_results_dir: ./result
+container: 
+
+env_vars:
+ LOGLEVEL: DEBUG
+ TORCH_DISTRIBUTED_DEBUG: DETAIL
+ TORCH_NCCL_ENABLE_MONITORING: 1
+ TORCH_NCCL_TRACE_BUFFER_SIZE: 20000
+ TORCH_NCCL_DUMP_ON_TIMEOUT: 1
+ TORCH_NCCL_DEBUG_INFO_TEMP_FILE: /local/nccl_trace_rank_
+ PYTORCH_CUDA_ALLOC_CONF: "expandable_segments:True"
+ NCCL_DEBUG: INFO
+ NCCL_SOCKET_IFNAME: ^lo
+ TORCH_NCCL_ASYNC_ERROR_HANDLING: 1
