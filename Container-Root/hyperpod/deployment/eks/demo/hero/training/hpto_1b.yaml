@@ -2,10 +2,10 @@ apiVersion: sagemaker.amazonaws.com/v1
 kind: HyperPodPyTorchJob
 metadata:
   name: llama3-2-1b-fsdp-hpto
-  # namespace: hyperpod-ns-training-team
-  # labels:
-  #   kueue.x-k8s.io/queue-name: hyperpod-ns-training-team-localqueue
-  #   kueue.x-k8s.io/priority-class: training-priority
+  namespace: hyperpod-ns-training-team
+  labels:
+    kueue.x-k8s.io/queue-name: hyperpod-ns-training-team-localqueue
+    kueue.x-k8s.io/priority-class: training-priority
 spec:
   nprocPerNode: "$GPU_PER_NODE"
   runPolicy:

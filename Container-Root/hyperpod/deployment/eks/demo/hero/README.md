@@ -33,7 +33,7 @@ Before running this demo, ensure you have:
 - **0 instances of g5.8xlarge** (autoscaling instance group)
 
 **Additional Setup:**
-- [SageMaker Studio](https://github.com/aws-samples/awsome-distributed-training/blob/main/1.architectures/7.sagemaker-hyperpod-eks/cfn-templates/sagemaker-studio-stack.yaml) configured
+- SageMaker Studio configured (optional, for enhanced cluster management)
 
 ---
 
@@ -333,16 +333,40 @@ aws eks create-addon --cluster-name $EKS_CLUSTER_NAME --addon-name eks-pod-ident
 3. On the Dashboard tab, locate the add-on named Amazon SageMaker HyperPod training operator, and choose install
 4. During the installation process, SageMaker AI creates an IAM execution role with permissions similar to the [AmazonSageMakerHyperPodTrainingOperatorAccess](https://docs.aws.amazon.com/aws-managed-policy/latest/reference/AmazonSageMakerHyperPodTrainingOperatorAccess.html) managed policy and creates a pod identity association between your Amazon EKS cluster and your new execution role
 
-### 5.2 Build Docker Image
+### 5.2 Download Training Dataset to FSx
 
-Before submitting our job, we need to build and push our Docker image to our ECR. This image will contain all of our job dependencies, libraries, and code to submit the training job. 
+Before training, we need to download the C4 dataset to FSx for faster data loading during training. This script downloads the English subset of the C4 dataset (~305GB) directly to your FSx volume.
+
+You can also stream from HuggingFace bot this may bring throttling errors. To do this, please reference the example [here](https://github.com/aws-samples/awsome-distributed-training/tree/main/3.test_cases/pytorch/FSDP). The only difference between this demo and that example is the dataloader in `src/model_utils/train_utils.py` and how we reference the data in our `hpto_1b.yaml`.
+
+**Download the dataset:**
+Create a pod that mounts our FSx to it:
+``` bash
+kubectl apply -f fsx.yaml
+```
+Download data:
+``` bash
+./training/download-c4-direct.sh
+```
+
+> **📋 What this does:**
+> - Creates a temporary pod with FSx mounted
+> - Installs git and git-lfs
+> - Downloads the C4 English dataset to `/fsx/datasets/c4/en/`
+> - The dataset will be available to all training jobs via the FSx PVC
+> 
+> **Note:** This download takes time depending on your network speed. The dataset is ~305GB and will be stored on FSx for reuse across multiple training runs.
+
+### 5.3 Build Docker Image
+
+Before submitting our job, we need to build and push our Docker image to ECR. This image will contain all of our job dependencies, libraries, and code to submit the training job. 
 
 To build and push your image to ECR, please run:
 ``` bash
 ./training/build-push.sh
 ```
 
-### 5.3 Create PVC in `hyperpod-ns-training-team` Namespace
+### 5.4 Create PVC in `hyperpod-ns-training-team` Namespace
 
 Since PVCs are namespace isolated and the cluster creation creates our FSx PVC in the `default` namespace, we can create a PVC using static provisioning in the `hyperpod-ns-training-team` namespace, where we will submit our training job.
 

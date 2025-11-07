@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "Building HPTO FSDP image..."
-pushd ./awsome-distributed-training/3.test_cases/pytorch/FSDP/
+pushd ./training/fsdp/
 docker build --platform linux/amd64 -f Dockerfile -t ${REGISTRY}${IMAGE}:${TAG} .
 popd
 

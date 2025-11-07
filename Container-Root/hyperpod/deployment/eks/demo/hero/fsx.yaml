@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: fsx-cleanup-pod
+  name: fsx-pod
 spec:
   volumes:
     - name: fsx-storage

@@ -5,7 +5,7 @@ set -e
 
 echo "Starting direct C4 download to FSx..."
 
-kubectl exec -it fsx-cleanup-pod -- bash -c '
+kubectl exec -it fsx-pod -- bash -c '
 set -e
 
 echo "Installing git and git-lfs..."
