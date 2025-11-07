@@ -4,5 +4,5 @@ torch==2.7.1
 torchaudio==2.7.1
 torchvision==0.22.1
 transformers==4.52.4
-mlflow==3.0.0
+mlflow==3.5.0rc0
 sagemaker-mlflow
