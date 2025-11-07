@@ -1,0 +1,160 @@
+apiVersion: sagemaker.amazonaws.com/v1
+kind: HyperPodPyTorchJob
+metadata:
+  name: llama3-2-1b-fsdp-hpto
+  namespace: hyperpod-ns-training-team
+  labels:
+    kueue.x-k8s.io/queue-name: hyperpod-ns-training-team-localqueue
+    kueue.x-k8s.io/priority-class: training-priority
+spec:
+  nprocPerNode: "$GPU_PER_NODE"
+  runPolicy:
+    jobMaxRetryCount: 100         # Maximum number of restarts at the process level
+    restartPolicy:
+      numRestartBeforeFullJobRestart: 10    # Maximum number of restarts at the process level before the operator restarts at the job level
+      evalPeriodSeconds: 43200            # The period of evaluating the restart limit in seconds
+      maxFullJobRestarts: 10              # Maximum number of full job restarts before the job fails
+    cleanPodPolicy: All                 # Specifies the pods that the operator should clean. Accepted values are All, OnlyComplete, and None
+    logMonitoringConfiguration:
+      - name: JobStart
+        logPattern: '.*Loss:.*'
+        expectedStartCutOffInSeconds: 720
+      - name: JobHangingDetection
+        logPattern: '.*Loss:.*'
+        expectedRecurringFrequencyInSeconds: 1800
+  replicaSpecs:
+    - name: pods
+      replicas: $ACCEL_INSTANCE_COUNT
+      template:
+        metadata:
+          labels:
+            job-name: llama3-2-1b-fsdp-hpto
+            replica-type: pods
+        spec:
+          serviceAccountName: sagemaker-mlflow-sa
+          volumes:
+            - name: shmem
+              emptyDir:
+                medium: Memory
+                sizeLimit: "200Gi"
+              # hostPath:
+              #   path: /dev/shm
+            - name: local
+              hostPath:
+                path: /mnt/k8s-disks/0
+            - name: fsx-storage
+              persistentVolumeClaim:
+                claimName: fsx-claim
+          affinity:
+            podAntiAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchLabels:
+                      job-name: llama3-2-1b-fsdp-hpto
+                  topologyKey: kubernetes.io/hostname
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                  - matchExpressions:
+                      - key: sagemaker.amazonaws.com/node-health-status
+                        operator: In
+                        values:
+                          - Schedulable
+                      - key: sagemaker.amazonaws.com/compute-type
+                        operator: In
+                        values:
+                          - '${ACCEL_INSTANCE_TYPE}'
+          topologySpreadConstraints:
+            - maxSkew: 1
+              topologyKey: kubernetes.io/hostname
+              whenUnsatisfiable: DoNotSchedule
+              labelSelector:
+                matchLabels:
+                  job-name: llama3-1-8b-fsdp-hpto
+          containers:
+            - name: pytorch
+              image: ${REGISTRY}${IMAGE}:${TAG}
+              imagePullPolicy: Always
+              resources:
+                requests:
+                  nvidia.com/gpu: $GPU_PER_NODE
+                  vpc.amazonaws.com/efa: $EFA_PER_NODE
+                limits:
+                  nvidia.com/gpu: $GPU_PER_NODE
+                  vpc.amazonaws.com/efa: $EFA_PER_NODE
+              env:
+              # for P5 FI_* should be commented out
+              # - name: LOGLEVEL
+              #   value: "DEBUG"
+              - name: FI_PROVIDER
+                value: efa
+              #- name: FI_EFA_USE_DEVICE_RDMA
+              #  value: "1"
+              - name: FI_EFA_FORK_SAFE
+                value: "1"
+              #- name: FI_LOG_LEVEL
+              #  value: "1"
+              #- name: FI_EFA_ENABLE_SHM_TRANSFER
+              #  value: "1"
+              - name: TORCH_DISTRIBUTED_DEBUG
+                value: "DETAIL"
+              - name: TORCH_NCCL_ENABLE_MONITORING
+                value: "1"
+              - name: TORCH_NCCL_TRACE_BUFFER_SIZE
+                value: "20000"
+              - name: TORCH_NCCL_DUMP_ON_TIMEOUT
+                value: "1"
+              - name: TORCH_NCCL_DEBUG_INFO_TEMP_FILE
+                value: "/local/nccl_trace_rank_"
+              - name: PYTORCH_CUDA_ALLOC_CONF
+                value: "expandable_segments:True"
+              - name: NCCL_DEBUG
+                value: "INFO"
+              - name: NCCL_SOCKET_IFNAME
+                value: "^lo"
+              - name: TORCH_NCCL_ASYNC_ERROR_HANDLING
+                value: "1"
+              - name: CUDA_LAUNCH_BLOCKING
+                value: "1"
+              - name: HF_TOKEN
+                value: "${HF_TOKEN}"
+              #- name: TORCH_DIST_INIT_BARRIER
+              #  value: "1"
+              #- name: NCCL_IGNORE_DISABLED_P2P
+              #  value: "1"
+              #- name: NCCL_NVLS_ENABLE
+              #  value: "0"
+              command: 
+                - hyperpodrun
+                - '--tee=3'
+                - '--log_dir=/tmp/hyperpod'
+                - '--nproc_per_node=$GPU_PER_NODE'
+                - '--nnodes=$ACCEL_INSTANCE_COUNT'
+                - /fsdp/train.py
+                - --max_context_width=8192
+                - --num_key_value_heads=2
+                - --intermediate_size=8192
+                - --hidden_width=2048
+                - --num_layers=16
+                - --num_heads=32
+                - --model_type=llama_v3
+                - --tokenizer=hf-internal-testing/llama-tokenizer
+                - --checkpoint_freq=10
+                - --validation_freq=100
+                - --max_steps=5000
+                - --checkpoint_dir=/fsx/checkpoint1
+                # - --dataset=allenai/c4
+                - --dataset=/fsx/datasets/c4/en
+                # - --dataset_config_name=en
+                - --resume_from_checkpoint=/fsx/checkpoint1
+                - --train_batch_size=1
+                - --val_batch_size=1
+                - --sharding_strategy=full # https://pytorch.org/docs/stable/fsdp.html
+                - --offload_activations=1
+              volumeMounts:
+                - name: shmem
+                  mountPath: /dev/shm
+                - name: local
+                  mountPath: /local
+                - name: fsx-storage
+                  mountPath: /fsx

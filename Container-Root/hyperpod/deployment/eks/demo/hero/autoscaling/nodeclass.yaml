@@ -1,0 +1,11 @@
+apiVersion: karpenter.sagemaker.amazonaws.com/v1
+kind: HyperpodNodeClass
+metadata:
+  name: sample-nc
+spec:
+  instanceGroups:
+    # name of InstanceGroup in HyperPod cluster. InstanceGroup needs to pre-created
+    # MaxItems: 10
+    - scaling-group
+    - autoscaling-group
+    - inf-group

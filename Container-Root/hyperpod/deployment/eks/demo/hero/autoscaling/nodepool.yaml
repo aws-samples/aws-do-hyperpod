@@ -1,0 +1,32 @@
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: sample-np
+spec:
+  # Resource limits constrain the total size of the pool
+  limits:
+    nvidia.com/gpu: 2
+  
+  # Disruption settings for node lifecycle management
+  disruption:
+    budgets:
+      - nodes: 30%
+    consolidateAfter: 0s
+    consolidationPolicy: WhenEmpty
+  
+  template:
+    spec:
+      # Node expiration - Never means nodes won't expire automatically
+      expireAfter: Never
+      
+      # Reference to the HyperpodNodeClass
+      nodeClassRef:
+        group: karpenter.sagemaker.amazonaws.com
+        kind: HyperpodNodeClass
+        name: sample-nc
+      
+      # Requirements for node selection
+      requirements:
+        # Let Karpenter choose from available instance types in the instance groups
+        - key: node.kubernetes.io/instance-type
+          operator: Exists

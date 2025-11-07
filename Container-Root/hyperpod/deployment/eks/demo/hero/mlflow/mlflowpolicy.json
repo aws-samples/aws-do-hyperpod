@@ -1,0 +1,34 @@
+{
+    "Version": "2012-10-17",    
+    "Statement": [        
+        {            
+            "Effect": "Allow",            
+            "Action": [
+                "sagemaker-mlflow:*",
+                "sagemaker:CreateMlflowTrackingServer",
+                "sagemaker:UpdateMlflowTrackingServer",
+                "sagemaker:DeleteMlflowTrackingServer",
+                "sagemaker:StartMlflowTrackingServer",
+                "sagemaker:StopMlflowTrackingServer",
+                "sagemaker:CreatePresignedMlflowTrackingServerUrl",
+                "sagemaker:AddTags",
+                "sagemaker:CreateModelPackageGroup",
+                "sagemaker:CreateModelPackage",
+                "sagemaker:DescribeModelPackageGroup",
+                "sagemaker:UpdateModelPackage",
+                "sagemaker:ListModelPackageGroups",
+                "sagemaker:ListModelPackages",
+                "sagemaker:DeleteModelPackageGroup",
+                "sagemaker:DeleteModelPackage",
+                "cloudwatch:PutMetricData",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents",
+                "logs:CreateLogGroup",
+                "s3:Get*",
+                "s3:Put*",
+                "s3:List*"
+            ],            
+            "Resource": "*"        
+        }        
+    ]
+}

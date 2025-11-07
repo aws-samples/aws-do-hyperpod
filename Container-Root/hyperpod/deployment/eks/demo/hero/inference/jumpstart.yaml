@@ -1,0 +1,47 @@
+apiVersion: inference.sagemaker.aws.amazon.com/v1alpha1
+kind: JumpStartModel
+metadata:
+  name: mistral-jumpstart-autoscale
+  namespace: hyperpod-ns-inference-team
+  labels:
+    kueue.x-k8s.io/queue-name: hyperpod-ns-inference-team-localqueue
+    kueue.x-k8s.io/priority-class: inference-priority
+spec:
+  sageMakerEndpoint:
+    name: "mistral-autoscale-endpoint"
+  model:
+    modelHubName: SageMakerPublicHub
+    modelId: huggingface-llm-mistral-7b-instruct-v3
+    modelVersion: "1.0.0"
+  server:
+    instanceType: ml.g5.8xlarge
+  metrics:
+    enabled: true
+  maxDeployTimeInSeconds: 1800
+  tlsConfig:
+    tlsCertificateOutputS3Uri: "s3://${S3_BUCKET_NAME}"
+  autoScalingSpec:
+    minReplicaCount: 1
+    maxReplicaCount: 4
+    pollingInterval: 30
+    cooldownPeriod: 120
+    initialCooldownPeriod: 60
+    scaleDownStabilizationTime: 300
+    scaleUpStabilizationTime: 0
+    cloudWatchTrigger:
+      name: "Mistral-Invocations"
+      namespace: "AWS/SageMaker"
+      useCachedMetrics: true
+      metricName: "Invocations"
+      targetValue: 5.0
+      activationTargetValue: 1.0
+      minValue: 0.0
+      metricCollectionStartTime: 300
+      metricCollectionPeriod: 60
+      metricStat: "Sum"
+      metricType: "Average"
+      dimensions:
+        - name: "EndpointName"
+          value: "mistral-autoscale-endpoint"
+        - name: "VariantName"
+          value: "AllTraffic"
