@@ -8,5 +8,5 @@ echo "alias - show list of command shortcuts"
 echo "ll - list files in current directory"
 echo ""
 
-ls -alh --color=auto
+#ls -alh --color=auto
 
