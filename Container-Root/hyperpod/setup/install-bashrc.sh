@@ -1,7 +1,7 @@
 #!/bin/bash
 
-echo "/welcome.sh" >> /root/.bashrc
+echo "/welcome.sh" >> ${HOME}/.bashrc
 
-echo "alias q=quota.sh" >> /root/.bashrc
-echo "if [ -f /root/env_vars ]; then source /root/env_vars; fi" >> /root/.bashrc
+echo "alias q=quota.sh" >> ${HOME}/.bashrc
+echo "if [ -f ${HOME}/env_vars ]; then source ${HOME}/env_vars; fi" >> ${HOME}/.bashrc
 
