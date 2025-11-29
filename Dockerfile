@@ -29,6 +29,8 @@ USER sagemaker-user
 
 RUN /hyperpod/setup/eks/install-kubeps1.sh
 RUN /hyperpod/setup/install-bashrc.sh
+RUN /hyperpod/setup/eks/install-krew.sh
+RUN /hyperpod/setup/eks/install-stern.sh
 
 WORKDIR /aws-do-hyperpod
 
