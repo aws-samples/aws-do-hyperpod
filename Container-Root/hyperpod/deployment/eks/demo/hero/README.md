@@ -85,6 +85,14 @@ cd /hero-demo-hyperpod
 
 The HyperPod environment variables will be used throughout this repo.
 
+Configure your cluster settings (AWS region, cluster name, GPU counts, model paths):
+
+``` bash
+# Copy the example file and customize it with your values
+cp env_vars.example env_vars
+vim env_vars
+```
+
 Configure and source `env_vars`:
 ``` bash
 source env_vars
