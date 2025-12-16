@@ -1,0 +1,27 @@
+export EKS_CLUSTER_NAME=
+export EKS_CLUSTER_ARN=
+export S3_BUCKET_NAME=
+export EXECUTION_ROLE=
+export HYPERPOD_CLUSTER_ARN=
+export FSX_ID=  # If you leave this blank, it will pick the first fsx in your account
+
+# Container env vars
+export AWS_REGION=$(aws ec2 describe-availability-zones --output text --query 'AvailabilityZones[0].[RegionName]')
+export ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
+export REGISTRY=${ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/
+export IMAGE=fsdp
+export TAG=pytorch2.7.1
+
+
+# Training Envs
+export GPU_PER_NODE=1
+export ACCEL_INSTANCE_COUNT=8
+export GEN_INSTANCE_TYPE="ml.g5.8xlarge"
+export EFA_PER_NODE=1
+export HF_TOKEN=
+export GEN_INSTANCE_COUNT=2
+export GEN_INSTANCE_TYPE="ml.m5.12xlarge"
+
+# Inference Envs
+export NS_INF="hyperpod-ns-inference-team"
+export SAGEMAKER_ENDPOINT_NAME="deepseek15b-s3"
