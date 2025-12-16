@@ -2,10 +2,10 @@ apiVersion: sagemaker.amazonaws.com/v1
 kind: HyperPodPyTorchJob
 metadata:
   name: llama3-2-1b-fsdp-hpto
-  namespace: hyperpod-ns-training-team
-  labels:
-    kueue.x-k8s.io/queue-name: hyperpod-ns-training-team-localqueue
-    kueue.x-k8s.io/priority-class: training-priority
+  # namespace: hyperpod-ns-training-team
+  # labels:
+  #   kueue.x-k8s.io/queue-name: hyperpod-ns-training-team-localqueue
+  #   kueue.x-k8s.io/priority-class: training-priority
 spec:
   nprocPerNode: "$GPU_PER_NODE"
   runPolicy:
@@ -60,7 +60,7 @@ spec:
                         operator: In
                         values:
                           - Schedulable
-                      - key: sagemaker.amazonaws.com/compute-type
+                      - key: node.kubernetes.io/instance-type
                         operator: In
                         values:
                           - '${ACCEL_INSTANCE_TYPE}'
@@ -70,7 +70,7 @@ spec:
               whenUnsatisfiable: DoNotSchedule
               labelSelector:
                 matchLabels:
-                  job-name: llama3-1-8b-fsdp-hpto
+                  job-name: llama3-2-1b-fsdp-hpto
           containers:
             - name: pytorch
               image: ${REGISTRY}${IMAGE}:${TAG}
@@ -126,6 +126,7 @@ spec:
               #  value: "0"
               command: 
                 - hyperpodrun
+                - '--server-log-level=warning'
                 - '--tee=3'
                 - '--log_dir=/tmp/hyperpod'
                 - '--nproc_per_node=$GPU_PER_NODE'

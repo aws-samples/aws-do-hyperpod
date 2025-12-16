@@ -1,4 +1,6 @@
-FROM --platform=linux/amd64 public.ecr.aws/hpc-cloud/nccl-tests:cuda12.8.1-efa1.41.0-ofiv1.15.0-ncclv2.26.6-1-testsv2.15.2
+# FROM --platform=linux/amd64 public.ecr.aws/hpc-cloud/nccl-tests:cuda12.8.1-efa1.41.0-ofiv1.15.0-ncclv2.26.6-1-testsv2.15.2
+FROM --platform=linux/amd64 public.ecr.aws/hpc-cloud/nccl-tests:efa1.38.1-ofiv1.14.0-ncclv2.26.2-1-testsv2.14.1
+
 
 
 RUN apt update && apt install -y nvtop
