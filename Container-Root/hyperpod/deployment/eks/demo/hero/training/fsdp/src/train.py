@@ -21,6 +21,7 @@ from torch.distributed.fsdp import FullyShardedDataParallel as FSDP
 from torch.distributed.fsdp import MixedPrecision
 from torch.distributed.fsdp import ShardingStrategy
 from torch.distributed.fsdp import CPUOffload
+from torch.distributed.fsdp import StateDictType, FullStateDictConfig
 from torch.distributed.fsdp.wrap import size_based_auto_wrap_policy, transformer_auto_wrap_policy
 from torch.utils.data import DataLoader
 
@@ -42,6 +43,8 @@ from model_utils.arguments import parse_args
 import logging
 import sys
 import mlflow
+import mlflow.pytorch
+import mlflow.transformers
 
 logging.basicConfig(format="%(asctime)s [%(levelname)s] %(name)s: %(message)s", level=logging.INFO, stream=sys.stdout)
 
@@ -155,6 +158,83 @@ def train(
                     args.checkpoint_dir,
                     sub_dir,
                 )
+                
+                # Optional: Register intermediate model checkpoints
+                if args.register_checkpoints:
+                    # All ranks need to participate in FSDP state_dict operations
+                    # but only rank 0 will actually register the model
+                    try:
+                        if global_rank == 0:
+                            checkpoint_model_name = f"{args.model_type.replace('_', '-')}-checkpoint-{total_steps}steps"
+                            logger.info(f"Registering checkpoint model '{checkpoint_model_name}'...")
+                        
+                        # Get the model state dict - ALL RANKS must participate
+                        save_policy = FullStateDictConfig(offload_to_cpu=True, rank0_only=True)
+                        with FSDP.state_dict_type(model, StateDictType.FULL_STATE_DICT, save_policy):
+                            checkpoint_state_dict = model.state_dict()
+                        
+                        # Only rank 0 logs and registers the model
+                        if global_rank == 0:
+                            import tempfile
+                            import os
+                            
+                            with tempfile.TemporaryDirectory() as temp_dir:
+                                # Save the checkpoint model in Hugging Face format
+                                checkpoint_save_path = os.path.join(temp_dir, "checkpoint_model")
+                                os.makedirs(checkpoint_save_path, exist_ok=True)
+                                
+                                # Create a new model instance from config and load the checkpoint weights
+                                checkpoint_model = AutoModelForCausalLM.from_config(model_config)
+                                checkpoint_model.load_state_dict(checkpoint_state_dict)
+                                
+                                # Save the checkpoint model in Hugging Face format
+                                checkpoint_model.save_pretrained(checkpoint_save_path, safe_serialization=True)
+                                
+                                # Load tokenizer for the checkpoint model
+                                tokenizer = AutoTokenizer.from_pretrained(args.tokenizer)
+                                tokenizer.save_pretrained(checkpoint_save_path)
+                                
+                                # Use MLflow transformers integration for checkpoint registration
+                                from mlflow.models import infer_signature
+                                
+                                # Create model signature for MLflow
+                                signature = infer_signature(
+                                    model_input="What is the capital of France?",
+                                    model_output="The capital of France is Paris.",
+                                    params={
+                                        "max_new_tokens": 50,
+                                        "temperature": 0.7,
+                                        "top_p": 0.9
+                                    }
+                                )
+                                
+                                # Register the checkpoint model using MLflow transformers
+                                mlflow.transformers.log_model(
+                                    transformers_model={
+                                        "model": checkpoint_model,
+                                        "tokenizer": tokenizer
+                                    },
+                                    name=f"checkpoint-{total_steps}",  # Use name instead of artifact_path
+                                    signature=signature,
+                                    registered_model_name=checkpoint_model_name,
+                                    task="text-generation",
+                                    model_config={
+                                        "model_type": args.model_type,
+                                        "num_parameters": int(num_params),  # Convert to regular int
+                                        "training_steps": int(total_steps),  # Convert to regular int
+                                        "checkpoint": True,
+                                        "sharding_strategy": args.sharding_strategy,
+                                        "world_size": int(world_size),  # Convert to regular int
+                                        "max_new_tokens": 50,
+                                        "temperature": 0.7,
+                                        "top_p": 0.9
+                                    }
+                                )
+                            
+                            logger.info(f"Successfully registered checkpoint model '{checkpoint_model_name}'")
+                    except Exception as e:
+                        if global_rank == 0:
+                            logger.error(f"Failed to register checkpoint model: {str(e)}")
             if total_steps >= args.max_steps:
                 break
             
@@ -180,7 +260,10 @@ def main(args):
             "world_size": world_size,
             "bf16": args.bf16,
             "activation_checkpointing": args.activation_checkpointing,
-            "cpu_offload": args.cpu_offload
+            "cpu_offload": args.cpu_offload,
+            "register_model": args.register_model,
+            "register_checkpoints": args.register_checkpoints,
+            "model_name": args.model_name if args.model_name else f"{args.model_type}-fsdp-model"
         })
     
     if args.bf16:
@@ -313,6 +396,86 @@ def main(args):
           total_steps,
           start_batch_index)
   
+    # Register model with MLflow Model Registry
+    # All ranks must participate in FSDP operations, but only rank 0 registers
+    if args.register_model:
+        try:
+            if global_rank == 0:
+                # Create a model name based on arguments or default
+                model_name = args.model_name if args.model_name else f"{args.model_type.replace('_', '-')}-fsdp-model"
+                logger.info(f"Registering model '{model_name}' in MLflow Model Registry...")
+            
+            # Get the model state dict in a format that can be saved
+            # Configure FSDP to return full state dict on rank 0 - ALL RANKS participate
+            save_policy = FullStateDictConfig(offload_to_cpu=True, rank0_only=True)
+            with FSDP.state_dict_type(model, StateDictType.FULL_STATE_DICT, save_policy):
+                model_state_dict = model.state_dict()
+            
+            # Only rank 0 logs and registers the model
+            if global_rank == 0:
+                import tempfile
+                import os
+                
+                with tempfile.TemporaryDirectory() as temp_dir:
+                    # Save the model in Hugging Face format for better MLflow compatibility
+                    model_save_path = os.path.join(temp_dir, "model")
+                    os.makedirs(model_save_path, exist_ok=True)
+                    
+                    # Create a new model instance from config and load the trained weights
+                    # This creates a proper Hugging Face model that MLflow can handle
+                    clean_model = AutoModelForCausalLM.from_config(model_config)
+                    clean_model.load_state_dict(model_state_dict)
+                    
+                    # Save the model in Hugging Face format
+                    clean_model.save_pretrained(model_save_path, safe_serialization=True)
+                    
+                    # Load tokenizer for the model
+                    tokenizer = AutoTokenizer.from_pretrained(args.tokenizer)
+                    tokenizer.save_pretrained(model_save_path)
+                    
+                    # Use MLflow transformers integration for proper model registration
+                    from mlflow.models import infer_signature
+                    
+                    # Create model signature for MLflow
+                    signature = infer_signature(
+                        model_input="What is the capital of France?",
+                        model_output="The capital of France is Paris.",
+                        params={
+                            "max_new_tokens": 50,
+                            "temperature": 0.7,
+                            "top_p": 0.9
+                        }
+                    )
+                    
+                    # Register the model using MLflow transformers
+                    mlflow.transformers.log_model(
+                        transformers_model={
+                            "model": clean_model,
+                            "tokenizer": tokenizer
+                        },
+                        name="model",  # Use name instead of artifact_path
+                        signature=signature,
+                        registered_model_name=model_name,
+                        task="text-generation",
+                        model_config={
+                            "model_type": args.model_type,
+                            "num_parameters": int(num_params),  # Convert to regular int
+                            "training_steps": int(total_steps),  # Convert to regular int
+                            "sharding_strategy": args.sharding_strategy,
+                            "world_size": int(world_size),  # Convert to regular int
+                            "max_new_tokens": 50,
+                            "temperature": 0.7,
+                            "top_p": 0.9
+                        }
+                    )
+                
+                logger.info(f"Model registered successfully as '{model_name}' in MLflow Model Registry")
+            
+        except Exception as e:
+            if global_rank == 0:
+                logger.error(f"Failed to register model: {str(e)}")
+                # Continue execution even if model registration fails
+    
     # End MLflow run (only on rank 0)
     if global_rank == 0:
         mlflow.end_run()

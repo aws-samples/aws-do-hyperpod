@@ -8,9 +8,11 @@ if docker build --platform linux/amd64 -f Dockerfile -t ${REGISTRY}${IMAGE}:${TA
     echo "Pushing image to ECR..."
     
     # Create registry if needed
-    REGISTRY_COUNT=$(aws ecr describe-repositories | grep \"${IMAGE}\" | wc -l)
-    if [ "$REGISTRY_COUNT" == "0" ]; then
-            aws ecr create-repository --repository-name ${IMAGE}
+    if ! aws ecr describe-repositories --repository-names ${IMAGE} >/dev/null 2>&1; then
+        echo "Creating ECR repository ${IMAGE}..."
+        aws ecr create-repository --repository-name ${IMAGE}
+    else
+        echo "ECR repository ${IMAGE} already exists."
     fi
 
     # Login to registry

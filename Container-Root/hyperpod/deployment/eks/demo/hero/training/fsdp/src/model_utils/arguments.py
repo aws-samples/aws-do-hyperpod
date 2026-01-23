@@ -191,4 +191,26 @@ def parse_args():  # pylint: disable=too-many-statements
         help="number of batches to estimate validation loss",
     )
 
+    # MLflow Model Registry arguments
+    registry_grp = parser.add_argument_group(
+        title="model_registry", description="arguments for MLflow Model Registry")
+    registry_grp.add_argument(
+        "--register_model",
+        type=int,
+        default=1,
+        help="whether to register the final model in MLflow Model Registry (1=yes, 0=no)",
+    )
+    registry_grp.add_argument(
+        "--model_name",
+        type=str,
+        default=None,
+        help="custom name for the registered model (if None, uses model_type-fsdp-model)",
+    )
+    registry_grp.add_argument(
+        "--register_checkpoints",
+        type=int,
+        default=0,
+        help="whether to register intermediate checkpoint models (1=yes, 0=no)",
+    )
+
     return parser.parse_known_args()
