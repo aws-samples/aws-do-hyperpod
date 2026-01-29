@@ -20,8 +20,8 @@ spec:
     minReplicaCount: 1
     maxReplicaCount: 4
     pollingInterval: 30
-    cooldownPeriod: 120
-    initialCooldownPeriod: 60
+    cooldownPeriod: 600
+    initialCooldownPeriod: 540
     scaleDownStabilizationTime: 300
     scaleUpStabilizationTime: 0
     cloudWatchTrigger:

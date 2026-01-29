@@ -51,7 +51,7 @@ logging.basicConfig(format="%(asctime)s [%(levelname)s] %(name)s: %(message)s", 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-arn = "arn:aws:sagemaker:us-east-1:011528295005:mlflow-tracking-server/hyperpod-ts-demo"
+arn = "arn:aws:sagemaker:us-west-2:011528295005:mlflow-tracking-server/hyperpod-ts-demo"
 mlflow.set_tracking_uri(arn)
 
 

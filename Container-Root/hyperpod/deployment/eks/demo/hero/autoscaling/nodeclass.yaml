@@ -6,6 +6,5 @@ spec:
   instanceGroups:
     # name of InstanceGroup in HyperPod cluster. InstanceGroup needs to pre-created
     # MaxItems: 10
-    - scaling-group
+    # Only using AZs where ml.g5.8xlarge is available (us-west-2a, us-west-2b, us-west-2c)
     - autoscaling-group
-    - inf-group

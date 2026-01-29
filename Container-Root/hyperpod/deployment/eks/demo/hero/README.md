@@ -43,8 +43,8 @@ Before running this demo, ensure you have:
 
 ```bash
 # Clone this repository
-git clone https://github.com/mvinci12/hero-demo-hyperpod.git
-cd hero-demo-hyperpod
+git clone https://github.com/aws-samples/aws-do-hyperpod.git
+cd Container-Root/hyperpod/deployment/eks/demo/hero
 ```
 
 ### 1.2 Launch Container Environment
@@ -52,11 +52,12 @@ cd hero-demo-hyperpod
 Run the [aws-do-hyperpod](https://github.com/aws-samples/aws-do-hyperpod/tree/main) container with this repo mounted:
 
 ```bash
-docker run --name=do-hyperpod-use1 \
+docker run --platform linux/amd64 \
+  --name=do-hyperpod-hero \
   --hostname=deb706ea3971 \
   --mac-address=8a:15:14:f3:90:39 \
   --volume /var/run/docker.sock:/var/run/docker.sock \
-  --volume $(pwd):/hero-demo-hyperpod \
+  --volume $(pwd):/hero \
   --volume ~/.kube:/root/.kube \
   --volume ~/.aws:/root/.aws \
   --network=bridge \
@@ -68,7 +69,7 @@ docker run --name=do-hyperpod-use1 \
 
 ```bash
 # Exec into the container
-docker exec -it do-hyperpod-use1 bash
+docker exec -it do-hyperpod-hero bash
 ```
 
 > **Why use the container?** The aws-do-hyperpod container provides a pre-configured environment with all necessary tools (kubectl, aws CLI, Kubernetes utilities like kubectx/kubens, and HyperPod management scripts) already installed. This containerized approach follows the do-framework principles to simplify DevOps tasks. If you prefer your local environment, ensure you have kubectl, aws CLI, and proper cluster access configured.
@@ -76,7 +77,7 @@ docker exec -it do-hyperpod-use1 bash
 ### 1.3 Navigate to Project Directory
 
 ```bash
-cd /hero-demo-hyperpod
+cd /hero
 ```
 
 <br>
@@ -192,7 +193,7 @@ kubectl get nodepool sample-np -o yaml
 
 Both resources should show `Ready: True` in their status conditions.
 
-> **💡 Important:** Your autoscaling instance group (`worker-group-1`) should start with 0 nodes. Karpenter will automatically scale up nodes when pods are scheduled and scale them down when they're no longer needed.
+> **💡 Important:** Your autoscaling instance group (`autoscaling-group`) should start with 0 nodes. Karpenter will automatically scale up nodes when pods are scheduled and scale them down when they're no longer needed.
 
 ---
 
@@ -319,6 +320,15 @@ We have already decorated our Dockerfile, training YAML, and Python code for MLF
 3. Create MLFlow UI:
 ``` bash
 ./mlflow/create-ui.sh
+```
+
+When you get your Tracking Server ARN, you will need to input this ARN into our train.py so our code knows which tracking server to push to. 
+
+Please input the tracking server ARN into line 54 in `training/fsdp/src/train.py`:
+
+```
+arn = "arn:aws:sagemaker:us-west-2:xxxx:mlflow-tracking-server/hyperpod-ts-demo"
+mlflow.set_tracking_uri(arn)
 ```
 
 ## 5. Set up Training Resources
@@ -602,7 +612,6 @@ kubectl describe jumpstartmodel -n hyperpod-ns-inference-team
 
 Wait for the model to be fully loaded and ready:
 ```bash
-# kubectl logs -f deployment/deepseek15b-autoscale -n default
 kubectl logs -f deployment/mistral-jumpstart-autoscale -n hyperpod-ns-inference-team
 ```
 
@@ -697,7 +706,8 @@ python3 inference/load_test.py \
   --requests 200 \
   --rps 10 \
   --duration 10 \
-  --workers 15
+  --workers 15 \
+  --region $AWS_REGION
 ```
 
 At this point, we will see our training job is suspended in the HyperPod Task Governance console:
@@ -867,7 +877,8 @@ python3 inference/load_test.py \
   --requests 200 \
   --rps 10 \
   --duration 10 \
-  --workers 15
+  --workers 15 \
+  --region $AWS_REGION
 ```
 
 
