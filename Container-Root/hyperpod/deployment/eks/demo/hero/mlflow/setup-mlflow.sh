@@ -51,7 +51,7 @@ aws iam create-policy \
 
 # To Access MLFlow tracking server we need to create an IAM service account with a role that uses the above created policy. This section shows how to create an IAM role to delegate these permissions. To create this role we will use eksctl. 
 
-MLFLOW_ROLE_NAME=SM_MLFLOW_ACCESS_ROLE_DEMO
+export MLFLOW_ROLE_NAME=SM_MLFLOW_ACCESS_ROLE_DEMO_WEST2
 MLFLOW_POLICY_ARN=$(aws iam list-policies --query 'Policies[?PolicyName==`SageMakerMlFlowAccessPolicy`]' | jq '.[0].Arn' |  tr -d '"')
 
 eksctl create iamserviceaccount \

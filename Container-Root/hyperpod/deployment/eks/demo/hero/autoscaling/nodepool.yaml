@@ -5,7 +5,7 @@ metadata:
 spec:
   # Resource limits constrain the total size of the pool
   limits:
-    nvidia.com/gpu: 2
+    nvidia.com/gpu: 6
   
   # Disruption settings for node lifecycle management
   disruption:
@@ -19,6 +19,11 @@ spec:
       # Node expiration - Never means nodes won't expire automatically
       expireAfter: Never
       
+      # Taints for GPU nodes
+      taints:
+        - key: nvidia.com/gpu
+          effect: NoSchedule
+      
       # Reference to the HyperpodNodeClass
       nodeClassRef:
         group: karpenter.sagemaker.amazonaws.com
@@ -27,6 +32,6 @@ spec:
       
       # Requirements for node selection
       requirements:
-        # Let Karpenter choose from available instance types in the instance groups
+        # Match instance type
         - key: node.kubernetes.io/instance-type
           operator: Exists
