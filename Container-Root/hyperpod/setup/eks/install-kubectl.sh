@@ -24,8 +24,8 @@ echo ""
 echo "Installing kubectl bash completion ..."
 # Install bash completion
 # Reference: https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#enable-kubectl-autocompletion
-echo 'source /usr/share/bash-completion/bash_completion' >> /root/.bashrc
-echo 'source <(kubectl completion bash)' >> /root/.bashrc
-echo 'alias k=kubectl' >> /root/.bashrc
-echo 'complete -o default -F __start_kubectl k' >> /root/.bashrc
+echo 'source /usr/share/bash-completion/bash_completion' >> ${HOME}/.bashrc
+echo 'source <(kubectl completion bash)' >> ${HOME}/.bashrc
+echo 'alias k=kubectl' >> ${HOME}/.bashrc
+echo 'complete -o default -F __start_kubectl k' >> ${HOME}/.bashrc
 

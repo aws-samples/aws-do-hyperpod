@@ -62,6 +62,7 @@ alias nlf='node-label-family.sh'
 alias eu='efatop.sh'
 alias efa-util='efatop.sh'
 alias ktop='kubectl ktop'
+alias iu='iftop.sh'
 
 if [ -f ~/.kubeon ]; then
         source ~/kube-ps1.sh
@@ -70,7 +71,7 @@ fi
 
 export TERM=xterm-256color
 
-export PATH=$PATH:/root/go/bin:/hyperpod/ops/eks:/hyperpod/ops/slurm:/hyperpod/ops:/root/.krew/bin:.
+export PATH=$PATH:${HOME}/go/bin:/hyperpod/ops/eks:/hyperpod/ops/slurm:/hyperpod/ops:${HOME}/.krew/bin:.
 
 EOF
 
