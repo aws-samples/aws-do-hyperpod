@@ -53,6 +53,9 @@ python -m pip install torchx[kubernetes]
 # Install hyperpod-eks
 ./hyperpod/setup/eks/install-hyperpod-eks.sh
 
+# Install zellij
+./hyperpod/setup/install-zellij.sh
+
 # Install sbom utilities
 ./hyperpod/setup/install-sbom-utils.sh
 
@@ -72,7 +75,7 @@ if [ ! "$MOD" == "compact" ]; then
 	# Install cmctl
 	./hyperpod/setup/eks/install-cmctl.sh
 
-	* Install ktop
+	# Install ktop
 	./hyperpod/setup/eks/install-ktop.sh
 
 	apt clean
