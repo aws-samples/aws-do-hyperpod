@@ -22,7 +22,9 @@ ADD wd/conf /hyperpod/conf
 
 RUN export http_proxy=$http_proxy; export https_proxy=$https_proxy; export no_proxy=$no_proxy; export MOD=$MOD; /setup.sh; rm -f /setup.sh
 
-RUN chown -R sagemaker-user:users /hyperpod /wd
+RUN mkdir -p /wd /aws-do-hyperpod
+
+RUN chown -R sagemaker-user:users /hyperpod /wd /aws-do-hyperpod
 
 RUN chown sagemaker-user:users /*.sh /*.txt
 
