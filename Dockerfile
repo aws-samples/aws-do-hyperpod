@@ -13,9 +13,10 @@ RUN adduser --uid 1000 --gid 100 --shell /bin/bash sagemaker-user
 RUN usermod -aG sudo sagemaker-user
 RUN mkdir -p /etc/sudoers.d /aws-do-hyperpod
 RUN echo "%sudo ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/nopasswd && chmod 0440 /etc/sudoers.d/nopasswd
-RUN rm -f /hyperpod/conf
 
 ADD Container-Root /
+
+RUN rm -f /hyperpod/conf
 
 ADD wd/conf /hyperpod/conf
 
