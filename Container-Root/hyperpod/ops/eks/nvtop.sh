@@ -18,12 +18,22 @@ else
 	node_name=$1
 	full_node_name=$(kubectl get nodes | grep $node_name | head -n 1 | cut -d ' ' -f 1)
 	if [ -z "$full_node_name" ]; then
-		echo "ERROR: no node matches '$node_name'" >&2
+		echo "ERROR: no node matches '${node_name}'" >&2
+		exit 1
+	fi
+        has_gpu=$(kubectl describe node ${full_node_name} | grep Capacity -A 8 | grep gpu | wc -l)
+	if [ "${has_gpu}" == "0" ]; then
+		echo "ERROR: node ${full_node_name} does not have any GPUs" >&2
 		exit 1
 	fi
 	host_name=$(echo $full_node_name | cut -d '.' -f 1)
 	pod_name=nvtop-${host_name}
-	CMD="kubectl run -it --rm $pod_name --image iankoulski/do-nvtop:latest --overrides='{\"apiVersion\": \"v1\", \"spec\": {\"nodeSelector\": { \"kubernetes.io/hostname\": \"$full_node_name\" }}}' --command -- nvtop"
+	has_pod=$(kubectl get pods | grep ${pod_name} | wc -l)
+	if [ "$has_pod" == "0" ]; then
+		CMD="kubectl run -it --rm $pod_name --image iankoulski/do-nvtop:latest --overrides='{\"apiVersion\": \"v1\", \"spec\": {\"nodeSelector\": { \"kubernetes.io/hostname\": \"$full_node_name\" }}}' --command -- nvtop"
+        else
+		CMD="kubectl exec -it $pod_name -- nvtop"
+	fi
 	if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
 	eval "$CMD"
 fi
