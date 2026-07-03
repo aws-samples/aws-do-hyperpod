@@ -18,7 +18,8 @@ def list_models(path='models'):
 
 
 def create_sbatch_file(model_name, model_parameters):
-    env = jinja2.Environment(loader=jinja2.FileSystemLoader('slurm'))
+    env = jinja2.Environment(loader=jinja2.FileSystemLoader('slurm'),
+                             autoescape=jinja2.select_autoescape())
     template = env.get_template('training-sub.template')
     content = template.render(MODEL_NAME=model_name,
                               MODEL_PARAMETERS=model_parameters)
@@ -29,7 +30,8 @@ def create_sbatch_file(model_name, model_parameters):
 
 
 def create_kubernetes_file(model_name, model_parameters):
-    env = jinja2.Environment(loader=jinja2.FileSystemLoader('kubernetes'))
+    env = jinja2.Environment(loader=jinja2.FileSystemLoader('kubernetes'),
+                             autoescape=jinja2.select_autoescape())
     template = env.get_template('training_kubernetes.template')
     model_name_dashed = model_name.replace('_', '-')
     content = template.render(MODEL_NAME=model_name_dashed,
