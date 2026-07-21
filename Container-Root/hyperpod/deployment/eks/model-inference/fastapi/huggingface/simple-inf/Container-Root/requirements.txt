@@ -1,4 +1,4 @@
-transformers==4.44.2
+transformers==5.5.0
 configparser
 fastapi
 uvicorn
