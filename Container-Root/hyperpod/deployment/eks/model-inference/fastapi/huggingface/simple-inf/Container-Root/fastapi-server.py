@@ -111,7 +111,7 @@ async def infer(model_id, seq_0: Optional[str] = default_question, seq_1: Option
         if not quiet:
             logger.warning(f"\nQuestion: {question}\n")
         tokenizer=tokenizers[model_id]
-        encoded_input = tokenizer.encode_plus(question, context, return_tensors='pt', max_length=128, padding='max_length', truncation=True)
+        encoded_input = tokenizer(question, context, return_tensors='pt', max_length=128, padding='max_length', truncation=True)
         if processor=='gpu':
             encoded_input.to(device)
         model=models[model_id]

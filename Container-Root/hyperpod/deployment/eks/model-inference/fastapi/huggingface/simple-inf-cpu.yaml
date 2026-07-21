@@ -30,7 +30,7 @@ spec:
           #!/bin/bash          
           apt update
           apt install -y curl vim jq
-          pip install transformers configparser fastapi uvicorn
+          pip install transformers==4.44.2 configparser fastapi uvicorn
           curl -L -o config.properties https://raw.githubusercontent.com/aws-samples/aws-do-hyperpod/refs/heads/main/Container-Root/hyperpod/deployment/eks/model-inference/fastapi/huggingface/simple-inf/Container-Root/config.properties
           . ./config.properties
           mkdir -p $model_save_path
