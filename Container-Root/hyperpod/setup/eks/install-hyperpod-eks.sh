@@ -8,11 +8,11 @@ pushd /hyperpod/impl/eks/src
 
 ## cfn
 mkdir cfn
-#curl 'https://raw.githubusercontent.com/aws-samples/awsome-distributed-training/main/1.architectures/7.sagemaker-hyperpod-eks/cfn-templates/hyperpod-eks-full-stack.yaml' --output cfn/hyperpod-eks-full-stack.yaml
+#curl 'https://raw.githubusercontent.com/awslabs/awsome-distributed-ai/main/architectures/sagemaker-hyperpod-eks/cfn-templates/hyperpod-eks-full-stack.yaml' --output cfn/hyperpod-eks-full-stack.yaml
 
 ## scripts
 mkdir scripts
-#curl 'https://raw.githubusercontent.com/aws-samples/awsome-distributed-training/main/1.architectures/7.sagemaker-hyperpod-eks/create_config.sh' --output scripts/create_config.sh
+#curl 'https://raw.githubusercontent.com/awslabs/awsome-distributed-ai/main/architectures/sagemaker-hyperpod-eks/create_config.sh' --output scripts/create_config.sh
 chmod +x scripts/*.sh
 
 

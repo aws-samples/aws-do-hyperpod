@@ -355,7 +355,7 @@ aws eks create-addon --cluster-name $EKS_CLUSTER_NAME --addon-name eks-pod-ident
 
 Before training, we need to download the C4 dataset to FSx for faster data loading during training. This script downloads the English subset of the C4 dataset (~305GB) directly to your FSx volume.
 
-You can also stream from HuggingFace bot this may bring throttling errors. To do this, please reference the example [here](https://github.com/aws-samples/awsome-distributed-training/tree/main/3.test_cases/pytorch/FSDP). The only difference between this demo and that example is the dataloader in `src/model_utils/train_utils.py` and how we reference the data in our `hpto_1b.yaml`.
+You can also stream from HuggingFace bot this may bring throttling errors. To do this, please reference the example [here](https://github.com/awslabs/awsome-distributed-ai/tree/main/examples/training/fsdp). The only difference between this demo and that example is the dataloader in `src/model_utils/train_utils.py` and how we reference the data in our `hpto_1b.yaml`.
 
 **Download the dataset:**
 Create a pod that mounts our FSx to it:
