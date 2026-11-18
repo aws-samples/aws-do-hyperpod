@@ -1,0 +1,94 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  FSx for Lustre shared filesystem for the HyperPod Slurm cluster. Imports the
+  VPC, subnet and CIDR from the base stack and places the filesystem in the same
+  private subnet as the cluster nodes, so the nodes can mount it at the path
+  given in the cluster configuration.
+
+Parameters:
+  BaseStackName:
+    Type: String
+    Description: Name of the base stack to import the VPC, subnet and CIDR from.
+  ResourceNamePrefix:
+    Type: String
+    Default: aws-do-hyperpod-slurm
+    Description: Prefix for the Name tag of the resources created by this stack.
+  StorageCapacityGiB:
+    Type: Number
+    Default: 1200
+    Description: >
+      Lustre capacity in GiB. Valid values depend on the deployment type
+      (SCRATCH_2 uses 1200 or multiples of 2400).
+  DeploymentType:
+    Type: String
+    Default: SCRATCH_2
+    AllowedValues:
+      - SCRATCH_2
+      - PERSISTENT_2
+    Description: SCRATCH_2 is the cheapest and has no replication.
+  PerUnitStorageThroughput:
+    Type: Number
+    Default: 250
+    Description: MB/s per TiB. Only used when DeploymentType is PERSISTENT_2.
+
+Conditions:
+  IsPersistent: !Equals [!Ref DeploymentType, PERSISTENT_2]
+
+Resources:
+  # Lustre uses TCP 988 and 1018-1023. They are allowed from the whole VPC CIDR
+  # to keep the setup simple, since the VPC is private.
+  FsxSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: FSx for Lustre access from within the VPC
+      VpcId:
+        Fn::ImportValue: !Sub '${BaseStackName}-VpcId'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 988
+          ToPort: 988
+          CidrIp:
+            Fn::ImportValue: !Sub '${BaseStackName}-VpcCidr'
+        - IpProtocol: tcp
+          FromPort: 1018
+          ToPort: 1023
+          CidrIp:
+            Fn::ImportValue: !Sub '${BaseStackName}-VpcCidr'
+      Tags:
+        - Key: Name
+          Value: !Sub '${ResourceNamePrefix}-fsx-sg'
+
+  LustreFileSystem:
+    Type: AWS::FSx::FileSystem
+    # Delete, so that deleting the stack removes the filesystem and stops billing.
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      FileSystemType: LUSTRE
+      # Pinned: with the default version (2.10) HyperPod nodes failed to mount.
+      FileSystemTypeVersion: '2.15'
+      StorageCapacity: !Ref StorageCapacityGiB
+      LustreConfiguration:
+        DeploymentType: !Ref DeploymentType
+        PerUnitStorageThroughput: !If [IsPersistent, !Ref PerUnitStorageThroughput, !Ref 'AWS::NoValue']
+      SubnetIds:
+        - Fn::ImportValue: !Sub '${BaseStackName}-PrivateSubnetId'
+      SecurityGroupIds:
+        - !Ref FsxSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub '${ResourceNamePrefix}-lustre'
+
+Outputs:
+  FileSystemId:
+    Description: FSx for Lustre filesystem ID
+    Value: !Ref LustreFileSystem
+  FsxDnsName:
+    Description: FSx DNS name, for FsxLustreConfig in the cluster configuration
+    Value: !GetAtt LustreFileSystem.DNSName
+  FsxMountName:
+    Description: FSx Lustre mount name, for FsxLustreConfig in the cluster configuration
+    Value: !GetAtt LustreFileSystem.LustreMountName
+  FsxSecurityGroupId:
+    Description: FSx security group ID
+    Value: !Ref FsxSecurityGroup

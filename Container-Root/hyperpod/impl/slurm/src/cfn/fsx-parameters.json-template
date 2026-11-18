@@ -1,0 +1,7 @@
+[
+    {"ParameterKey": "BaseStackName", "ParameterValue": "$STACK_ID"},
+    {"ParameterKey": "ResourceNamePrefix", "ParameterValue": "$RESOURCE_NAME_PREFIX"},
+    {"ParameterKey": "StorageCapacityGiB", "ParameterValue": "$FSX_STORAGE_CAPACITY"},
+    {"ParameterKey": "DeploymentType", "ParameterValue": "$FSX_DEPLOYMENT_TYPE"},
+    {"ParameterKey": "PerUnitStorageThroughput", "ParameterValue": "$FSX_THROUGHPUT_PER_TB"}
+]

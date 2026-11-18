@@ -21,7 +21,12 @@ rm -rf ./aws
 rm -f awscliv2.zip
 
 # Install Session Manager Plugin
-curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb"
+if [ "$ARCH" == "aarch64" ] || [ "$ARCH" == "arm64" ]; then
+	SSM_PLUGIN_PLATFORM=ubuntu_arm64
+else
+	SSM_PLUGIN_PLATFORM=ubuntu_64bit
+fi
+curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/${SSM_PLUGIN_PLATFORM}/session-manager-plugin.deb" -o "session-manager-plugin.deb"
 sudo dpkg -i session-manager-plugin.deb
 rm -f session-manager-plugin.deb
 

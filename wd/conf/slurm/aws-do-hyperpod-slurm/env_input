@@ -1,0 +1,47 @@
+# Input environment variables for the Slurm HyperPod cluster
+## HyperPod
+export RESOURCE_NAME_PREFIX=aws-do-hyperpod-slurm
+export HYPERPOD_NAME=${RESOURCE_NAME_PREFIX}-smhp
+
+## CloudFormation stack names
+## STACK_ID - network stack (VPC, subnets, security group, execution role)
+export STACK_ID=${RESOURCE_NAME_PREFIX}-cfn
+
+## FSX_STACK_ID - FSx for Lustre stack (only used when CREATE_FSX=true)
+export FSX_STACK_ID=${RESOURCE_NAME_PREFIX}-fsx
+
+## Controller (head node) instance group
+export CONTROLLER_GROUP_NAME=controller
+export CONTROLLER_INSTANCE_TYPE=ml.t3.medium
+export CONTROLLER_COUNT=1
+export CONTROLLER_VOLUME_SIZE=500
+## Worker (compute node) instance group
+export WORKER_GROUP_NAME=worker
+export WORKER_INSTANCE_TYPE=ml.m5.xlarge
+export WORKER_COUNT=1
+export WORKER_VOLUME_SIZE=500
+## Slurm partition (queue) the worker group belongs to
+export PARTITION_NAME=dev
+## NODE_RECOVERY - Automatic(default)|None
+export NODE_RECOVERY=Automatic
+
+## CREATE_FSX - true|false. When false, no FSx stack is created and
+## the instance groups are configured without a shared filesystem
+export CREATE_FSX=true
+## FSx for Lustre (used when CREATE_FSX=true)
+export FSX_MOUNT_PATH=/fsx
+export FSX_STORAGE_CAPACITY=1200
+export FSX_DEPLOYMENT_TYPE=SCRATCH_2
+## FSX_THROUGHPUT_PER_TB - MB/s per TiB, only used when FSX_DEPLOYMENT_TYPE=PERSISTENT_2
+export FSX_THROUGHPUT_PER_TB=250
+
+# VPC
+export AVAILABILITY_ZONE_ID=use1-az4
+export VPC_CIDR=10.192.0.0/16
+export PUBLIC_SUBNET1_CIDR=10.192.10.0/24
+export PRIVATE_SUBNET1_CIDR=10.192.16.0/20
+# When attaching to an existing VPC, uncomment the lines below
+# and specify the following resource ids as input
+#export VPC_ID=
+#export SUBNET_ID=
+#export SECURITY_GROUP_ID=
