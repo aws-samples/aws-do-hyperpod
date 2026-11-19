@@ -1,0 +1,7 @@
+[
+    {"ParameterKey": "ResourceNamePrefix", "ParameterValue": "$RESOURCE_NAME_PREFIX"},
+    {"ParameterKey": "AvailabilityZoneId", "ParameterValue": "$AVAILABILITY_ZONE_ID"},
+    {"ParameterKey": "VpcCidr", "ParameterValue": "$VPC_CIDR"},
+    {"ParameterKey": "PublicSubnetCidr", "ParameterValue": "$PUBLIC_SUBNET1_CIDR"},
+    {"ParameterKey": "PrivateSubnetCidr", "ParameterValue": "$PRIVATE_SUBNET1_CIDR"}
+]
