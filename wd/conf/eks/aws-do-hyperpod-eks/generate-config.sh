@@ -68,6 +68,34 @@ cat >> hyperpod-config.json << EOL
         "ExecutionRole": "${EXECUTION_ROLE}",
         "ThreadsPerCore": 1
       }
+EOL
+
+# Conditionally add the instance group that Karpenter scales (see ENABLE_AUTOSCALING).
+# It is created with 0 nodes, because Karpenter scales a group with other counts down to 0.
+if [ "${ENABLE_AUTOSCALING}" == "true" ]; then
+cat >> hyperpod-config.json << EOL
+      ,{
+        "InstanceGroupName": "${AUTOSCALE_GROUP_NAME}",
+        "InstanceType": "${AUTOSCALE_INSTANCE_TYPE}",
+        "InstanceCount": 0,
+        "InstanceStorageConfigs": [
+          {
+            "EbsVolumeConfig": {
+              "VolumeSizeInGB": ${AUTOSCALE_VOLUME_SIZE}
+            }
+          }
+        ],
+        "LifeCycleConfig": {
+          "SourceS3Uri": "s3://${S3_BUCKET_NAME}",
+          "OnCreate": "on_create.sh"
+        },
+        "ExecutionRole": "${EXECUTION_ROLE}",
+        "ThreadsPerCore": 1
+      }
+EOL
+fi
+
+cat >> hyperpod-config.json << EOL
     ],
     "VpcConfig": {
       "SecurityGroupIds": ["$SECURITY_GROUP_ID"],

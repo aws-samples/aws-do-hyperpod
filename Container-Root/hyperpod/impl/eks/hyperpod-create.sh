@@ -93,11 +93,18 @@ echo "Creating HyperPod cluster ..."
 CMD="aws sagemaker create-cluster --cli-input-json file://hyperpod-config.json --region $AWS_REGION ${ENDPOINT_ARG}"
 if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
 eval "$CMD"
-if [ "$?" == "0" ]; then
+CREATE_RC=$?
+if [ "$CREATE_RC" == "0" ]; then
 	echo ""
 	echo "To monitor cluster status use:"
 	echo "watch ./hyperpod-status.sh"
 	echo ""
 fi
 popd
+
+# Enable autoscaling after the cluster is created (optional)
+if [ "$CREATE_RC" == "0" ] && [ "$ENABLE_AUTOSCALING" == "true" ]; then
+	echo "Enabling autoscaling ..."
+	${ENV_HOME}impl/eks/hyperpod-autoscaling-enable.sh
+fi
 
