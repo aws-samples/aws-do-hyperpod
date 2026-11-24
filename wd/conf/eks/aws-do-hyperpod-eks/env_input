@@ -7,17 +7,17 @@ export RESOURCE_NAME_PREFIX=aws-do-hyperpod-eks
 export EKS_CLUSTER_NAME=${RESOURCE_NAME_PREFIX}-cluster
 export HYPERPOD_NAME=${RESOURCE_NAME_PREFIX}-smhp
 export STACK_ID=${RESOURCE_NAME_PREFIX}-cfn
-export ACCEL_INSTANCE_TYPE=ml.m5.xlarge
+export ACCEL_INSTANCE_TYPE=ml.g5.2xlarge
 export ACCEL_COUNT=2
 export ACCEL_VOLUME_SIZE=500
 export GEN_INSTANCE_TYPE=ml.c5.2xlarge
 export GEN_COUNT=2
 export GEN_VOLUME_SIZE=300
-#export ONSTART_DEEP_HEALTHCHECKS="[\"InstanceStress\", \"InstanceConnectivity\"]"
+export ONSTART_DEEP_HEALTHCHECKS="[\"InstanceStress\", \"InstanceConnectivity\"]"
 export NODE_RECOVERY=Automatic
 
 # Autoscaling with Karpenter (optional). ENABLE_AUTOSCALING=false(default)|true
-export ENABLE_AUTOSCALING=true
+export ENABLE_AUTOSCALING=false
 ## Instance group that Karpenter scales. It is created with 0 nodes and must stay at 0.
 export AUTOSCALE_GROUP_NAME=autoscale-worker-group
 export AUTOSCALE_INSTANCE_TYPE=ml.m5.xlarge
