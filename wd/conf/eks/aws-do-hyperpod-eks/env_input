@@ -17,9 +17,11 @@ export GEN_VOLUME_SIZE=300
 #export ONSTART_DEEP_HEALTHCHECKS="[\"InstanceStress\", \"InstanceConnectivity\"]"
 export NODE_RECOVERY=Automatic
 
-# Autoscaling with Karpenter (optional), set when the cluster is created.
+# Autoscaling with Karpenter (optional), set when the cluster is created or updated.
 ## ENABLE_AUTOSCALING=false(default): the cluster is created with the ACCEL_COUNT and GEN_COUNT instances above.
-## ENABLE_AUTOSCALING=true: ACCEL_COUNT and GEN_COUNT are ignored and both instance groups start with 0 instances.
+##   An update does not change autoscaling on the cluster.
+## ENABLE_AUTOSCALING=true: on create, ACCEL_COUNT and GEN_COUNT are ignored and both instance groups start with 0 instances.
+##   On update, autoscaling is enabled if the cluster does not have it yet. The instance counts are sent as configured.
 ## Create the HyperpodNodeClass and NodePool after the cluster is up, see impl/eks/src/manifests/autoscaling/
 export ENABLE_AUTOSCALING=true
 # VPC
