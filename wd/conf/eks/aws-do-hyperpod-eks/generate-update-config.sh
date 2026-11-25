@@ -61,10 +61,26 @@ cat >> hyperpod-update-config.json << EOL
         "ExecutionRole": "${EXECUTION_ROLE}",
         "ThreadsPerCore": 1
       }
+EOL
+
+cat >> hyperpod-update-config.json << EOL
     ],
     "NodeRecovery": "${NODE_RECOVERY}"
-}
 EOL
+# Conditionally enable autoscaling with Karpenter. hyperpod-update.sh sets
+# AUTOSCALING_ENABLE_ON_UPDATE=true only when ENABLE_AUTOSCALING=true and the cluster
+# does not have autoscaling yet, because the cluster role cannot change while it is on.
+if [ "${AUTOSCALING_ENABLE_ON_UPDATE}" == "true" ]; then
+cat >> hyperpod-update-config.json << EOL
+    ,"NodeProvisioningMode": "Continuous",
+    "ClusterRole": "${EXECUTION_ROLE}",
+    "AutoScaling": {
+      "Mode": "Enable",
+      "AutoScalerType": "Karpenter"
+    }
+EOL
+fi
+echo "}" >> hyperpod-update-config.json
 
 # Display the generated JSON file
 echo "==== Generated hyperpod-update-config.json ===="
