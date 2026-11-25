@@ -32,32 +32,4 @@ cat ./hyperpod-update-config.json
 CMD="aws sagemaker update-cluster --cli-input-json file://hyperpod-update-config.json --region $AWS_REGION ${ENDPOINT_ARG}"
 if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
 eval "${CMD}"
-UPDATE_RC=$?
 popd
-
-# Enable autoscaling after the cluster is updated (optional)
-if [ "$UPDATE_RC" == "0" ] && [ "$ENABLE_AUTOSCALING" == "true" ]; then
-	# update-cluster returns before the new instance group exists, so wait for it
-	POLL_INTERVAL=${POLL_INTERVAL:-30}
-	POLL_MAX=${POLL_MAX:-120}
-	echo "Waiting for instance group ${AUTOSCALE_GROUP_NAME} to be InService ..."
-	count=0
-	while true; do
-		GROUP_STATUS=$(aws sagemaker describe-cluster --cluster-name ${HYPERPOD_NAME} --query "InstanceGroups[?InstanceGroupName=='${AUTOSCALE_GROUP_NAME}'].Status | [0]" --output text --region $AWS_REGION ${ENDPOINT_ARG} 2>/dev/null)
-		if [ "${GROUP_STATUS}" == "InService" ]; then break; fi
-		if [ "${GROUP_STATUS}" == "Failed" ]; then
-			echo "[ERROR] instance group ${AUTOSCALE_GROUP_NAME} failed"
-			exit 1
-		fi
-		count=$((count + 1))
-		if [ "$count" -gt "${POLL_MAX}" ]; then
-			echo "[ERROR] timed out waiting for instance group ${AUTOSCALE_GROUP_NAME}, last status '${GROUP_STATUS}'"
-			exit 1
-		fi
-		echo "Instance group status is '${GROUP_STATUS}', checking again in ${POLL_INTERVAL} sec ..."
-		sleep ${POLL_INTERVAL}
-	done
-	echo "Enabling autoscaling ..."
-	${ENV_HOME}impl/eks/hyperpod-autoscaling-enable.sh
-fi
-

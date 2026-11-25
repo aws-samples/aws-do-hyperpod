@@ -1,0 +1,8 @@
+apiVersion: karpenter.sagemaker.amazonaws.com/v1
+kind: HyperpodNodeClass
+metadata:
+  name: nodeclass-worker-group-1
+spec:
+  # HyperPod instance group that Karpenter may scale. The cluster creates it with 0 instances.
+  instanceGroups:
+    - worker-group-1

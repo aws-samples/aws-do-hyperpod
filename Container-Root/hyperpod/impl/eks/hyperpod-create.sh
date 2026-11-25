@@ -88,23 +88,49 @@ pushd ${ENV_HOME}${CONF}
 ./generate-config.sh
 cat ./hyperpod-config.json
 
+# Prepare IAM for autoscaling (optional). It must be in place before the cluster is created.
+if [ "$ENABLE_AUTOSCALING" == "true" ]; then
+	echo "Autoscaling is enabled, preparing IAM ..."
+	${ENV_HOME}impl/eks/hyperpod-autoscaling-iam.sh
+fi
 # Create HyperPod cluster
 echo "Creating HyperPod cluster ..." 
 CMD="aws sagemaker create-cluster --cli-input-json file://hyperpod-config.json --region $AWS_REGION ${ENDPOINT_ARG}"
 if [ ! "$VERBOSE" == "false" ]; then echo -e "\n${CMD}\n"; fi
-eval "$CMD"
-CREATE_RC=$?
-if [ "$CREATE_RC" == "0" ]; then
-	echo ""
-	echo "To monitor cluster status use:"
-	echo "watch ./hyperpod-status.sh"
+if [ "$ENABLE_AUTOSCALING" == "true" ]; then
+	# IAM changes can take a while to become visible to HyperPod. Retry while the
+	# error says the role does not have sufficient permissions.
+	RETRY_INTERVAL=${RETRY_INTERVAL:-15}
+	RETRY_MAX=${RETRY_MAX:-12}
+	attempt=0
+	while true; do
+		set +e
+		CREATE_OUT=$(eval "$CMD" 2>&1)
+		CREATE_RC=$?
+		set -e
+		echo "${CREATE_OUT}"
+		if [ "$CREATE_RC" == "0" ]; then break; fi
+		attempt=$((attempt + 1))
+		if echo "${CREATE_OUT}" | grep -q "does not have sufficient permissions" && [ "$attempt" -le "${RETRY_MAX}" ]; then
+			echo "The role changes are not visible to HyperPod yet, retrying in ${RETRY_INTERVAL} sec (attempt ${attempt} of ${RETRY_MAX}) ..."
+			sleep ${RETRY_INTERVAL}
+			continue
+		fi
+		echo "[ERROR] failed to create HyperPod cluster ${HYPERPOD_NAME}"
+		exit $CREATE_RC
+	done
+else
+	eval "$CMD"
+fi
+echo ""
+echo "To monitor cluster status use:"
+echo "watch ./hyperpod-status.sh"
+echo ""
+if [ "$ENABLE_AUTOSCALING" == "true" ]; then
+	echo "Autoscaling is enabled. The cluster starts with 0 instances in worker-group-1 and worker-group-2."
+	echo "When the cluster and autoscaling are InService, create the HyperpodNodeClass and NodePool"
+	echo "for the instance groups you want to scale, for example:"
+	echo "kubectl apply -f ${ENV_HOME}impl/eks/src/manifests/autoscaling/"
 	echo ""
 fi
 popd
-
-# Enable autoscaling after the cluster is created (optional)
-if [ "$CREATE_RC" == "0" ] && [ "$ENABLE_AUTOSCALING" == "true" ]; then
-	echo "Enabling autoscaling ..."
-	${ENV_HOME}impl/eks/hyperpod-autoscaling-enable.sh
-fi
-

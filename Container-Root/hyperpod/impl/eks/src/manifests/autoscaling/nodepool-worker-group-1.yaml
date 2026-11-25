@@ -1,18 +1,18 @@
 apiVersion: karpenter.sh/v1
 kind: NodePool
 metadata:
-  name: nodepool-default
+  name: nodepool-worker-group-1
 spec:
   template:
     spec:
       nodeClassRef:
         group: karpenter.sagemaker.amazonaws.com
         kind: HyperpodNodeClass
-        name: nodeclass-default
+        name: nodeclass-worker-group-1
       expireAfter: Never
       requirements:
         - key: "node.kubernetes.io/instance-type"
           operator: Exists
-  # The most CPUs Karpenter may add in total
+  # The most CPUs Karpenter may add in total to this pool. Adjust to your needs.
   limits:
-    cpu: "${AUTOSCALE_CPU_LIMIT}"
+    cpu: "16"

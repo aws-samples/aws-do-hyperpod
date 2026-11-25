@@ -1,8 +1,0 @@
-apiVersion: karpenter.sagemaker.amazonaws.com/v1
-kind: HyperpodNodeClass
-metadata:
-  name: nodeclass-default
-spec:
-  # HyperPod instance groups that Karpenter may scale. They must exist and start with 0 nodes.
-  instanceGroups:
-    - ${AUTOSCALE_GROUP_NAME}
